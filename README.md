@@ -1,29 +1,44 @@
-# Welcome to your Lovable project
+# $yllabus
 
-This project was built with [Lovable](https://lovable.dev).
+**Your whole campus, on one tap.**
 
-## Build with Lovable
+$yllabus is a student-focused fintech experience that brings everyday money management and campus resources into one place. This repository contains the early-stage interactive beta, intended for product demonstrations and feedback. Account balances, campus funds, cards, and payment flows shown in the current prototype are illustrative and must not be treated as real financial services or university integrations.
 
-Open your project in the [Lovable editor](https://lovable.dev) and keep building.
+## Product scope
 
-- **Ship faster**: describe what you want to build and Lovable handles the code.
-- **Stay in sync**: connect the project to GitHub and every change made in Lovable is committed straight to your repository.
-- **Full ownership**: this code is yours. Push to your repository and your changes sync back into Lovable, ready for your next prompt.
+- Student dashboard for checking, savings, and recent activity
+- Campus resource overview for meal swipes, campus funds, stipends, and vouchers
+- Digital wallet presentation for student ID and payment cards
+- Send/receive demonstration flows
 
-## Development
+The long-term product is university-independent. Institution-specific data and capabilities will require authorized integrations.
 
-Prefer working locally? You need Node.js and npm — [install with nvm](https://github.com/nvm-sh/nvm#installing-and-updating).
+## Technology
 
-```sh
-git clone <this-repository-url>
-cd <repository-name>
-npm i
+- React and TypeScript
+- TanStack Start and TanStack Router
+- Tailwind CSS
+- Supabase integration scaffolding
+
+## Local development
+
+Requires Node.js and a compatible package manager.
+
+```bash
+npm install
 npm run dev
 ```
 
-## Built with
+Other scripts: `npm run build`, `npm run lint`, and `npm run preview`.
 
-- TanStack Start
-- TypeScript
-- React
-- Tailwind CSS
+## Development principles
+
+1. Preserve the existing interface unless a design change is explicitly approved.
+2. Plan and approve one feature at a time before implementation.
+3. Keep simulated transactions and balances separate from real financial systems.
+4. Never commit credentials, service-role keys, or private user data.
+5. Add authorization, validation, and tests before connecting live financial or campus services.
+
+## Current status
+
+Early beta prototype. Screens and visual flows exist; production-ready banking, NFC credentials, and university integrations are not claimed. Backend features must be individually verified before being described as operational.
