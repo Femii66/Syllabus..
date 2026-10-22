@@ -2,7 +2,7 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
 import { Stage } from "@/components/phone";
 import { Button } from "@/components/ui/button";
-import campusImage from "@/assets/campus.jpg";
+const campusImage = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=85";
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
