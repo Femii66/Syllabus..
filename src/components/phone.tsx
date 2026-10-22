@@ -1,6 +1,6 @@
 import { Link } from "@tanstack/react-router";
-import { GraduationCap, House, Send, WalletCards } from "lucide-react";
-import type { ReactNode } from "react";
+import { GraduationCap, House, Moon, Send, Sun, WalletCards } from "lucide-react";
+import { useEffect, useState, type ReactNode } from "react";
 
 export function Aurora() {
   return (
@@ -12,10 +12,30 @@ export function Aurora() {
   );
 }
 
+function ThemeToggle() {
+  const [dark, setDark] = useState(false);
+  useEffect(() => {
+    const saved = window.localStorage.getItem("syllabus-theme");
+    const enabled = saved === "dark" || (saved === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
+    document.documentElement.classList.toggle("dark", enabled);
+    setDark(enabled);
+  }, []);
+  function toggle() {
+    const next = !dark;
+    document.documentElement.classList.toggle("dark", next);
+    window.localStorage.setItem("syllabus-theme", next ? "dark" : "light");
+    setDark(next);
+  }
+  return <button type="button" onClick={toggle} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} title={dark ? "Light mode" : "Dark mode"} className="absolute right-4 top-4 z-50 grid size-10 place-items-center rounded-full bg-paper/80 text-ink shadow-sm ring-1 ring-ink/10 backdrop-blur-sm">
+    {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
+  </button>;
+}
+
 export function Stage({ children }: { children: ReactNode }) {
   return (
     <div className="relative min-h-screen w-full overflow-x-hidden bg-ice font-body text-ink">
       <Aurora />
+      <ThemeToggle />
       <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
         {children}
       </div>
