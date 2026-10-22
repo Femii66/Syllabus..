@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { Phone, Stage, TabBar } from "@/components/phone";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -103,9 +103,9 @@ function Dashboard() {
             <p className="text-xs text-ink/50">Good afternoon</p>
             <p className="font-display text-lg font-bold leading-tight">{name}</p>
           </div>
-          <div className="grid size-9 place-items-center rounded-full bg-violet/15 text-sm font-semibold text-violet">
+          <Link to="/settings" aria-label="Account settings" className="grid size-9 place-items-center rounded-full bg-violet/15 text-sm font-semibold text-violet">
             {initials}
-          </div>
+          </Link>
         </div>
 
         <div className="glass mt-4 rounded-3xl p-4 ring-1 ring-white/60">
