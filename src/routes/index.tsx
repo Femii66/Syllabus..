@@ -41,9 +41,10 @@ function Welcome() {
           to="/dashboard"
           className="flex w-full items-center justify-between rounded-2xl bg-ink px-5 py-4 text-sm font-semibold text-paper transition-transform duration-300 hover:-translate-y-0.5"
         >
-          Get started
+          Explore demo
           <ArrowRight className="size-4" aria-hidden="true" />
         </Link>
+        <Link to="/auth" className="mt-3 block text-center text-xs font-semibold text-ink/65 underline-offset-4 hover:underline">Sign in or create an account</Link>
       </Phone>
     </Stage>
   );
