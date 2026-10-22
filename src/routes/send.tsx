@@ -36,6 +36,7 @@ function Send() {
   const [amount, setAmount] = useState("");
   const [source, setSource] = useState<SourceId>("debit");
   const [signedIn, setSignedIn] = useState(false);
+  const [authReady, setAuthReady] = useState(false);
   const [recipientEmail, setRecipientEmail] = useState("");
   const [recipient, setRecipient] = useState<{ id: string; display_name: string } | null>(null);
   const [busy, setBusy] = useState(false);
@@ -44,7 +45,7 @@ function Send() {
 
   useEffect(() => {
     let active = true;
-    void supabase.auth.getUser().then(({ data }) => { if (active) setSignedIn(!!data.user); });
+    void supabase.auth.getUser().then(({ data }) => { if (active) setSignedIn(!!data.user); }).catch(() => { if (active) setError("Unable to verify your session."); }).finally(() => { if (active) setAuthReady(true); });
     return () => { active = false; };
   }, []);
 
@@ -64,7 +65,7 @@ function Send() {
   }
 
   async function submitTransfer() {
-    if (busy || numeric <= 0) return;
+    if (busy || !authReady || numeric <= 0) return;
     if (!signedIn) {
       await navigate({ to: "/confirmation", search: { amount: numeric, mode, source } });
       return;
@@ -189,7 +190,7 @@ function Send() {
         {error && <p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
         {notice && <p role="status" className="mt-2 text-xs text-ink/60">{notice}</p>}
         <button
-          disabled={busy || numeric <= 0 || (signedIn && (mode !== "send" || source !== "debit" || !recipient))}
+          disabled={busy || !authReady || numeric <= 0 || (signedIn && (mode !== "send" || source !== "debit" || !recipient))}
           onClick={() => void submitTransfer()}
           className="mt-4 w-full rounded-2xl bg-ink py-4 text-sm font-semibold text-paper transition-transform duration-300 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
         >
