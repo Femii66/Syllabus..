@@ -14,13 +14,15 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      profiles: { Row: { id: string; email: string; full_name: string; university: string | null; created_at: string; updated_at: string }; Insert: { id: string; email: string; full_name?: string; university?: string | null; created_at?: string; updated_at?: string }; Update: { email?: string; full_name?: string; university?: string | null; updated_at?: string }; Relationships: [] }
+      demo_financial_accounts: { Row: { id: string; student_id: string; account_type: string; balance_cents: number; currency: string; created_at: string; updated_at: string }; Insert: { id?: string; student_id: string; account_type: string; balance_cents?: number; currency?: string; created_at?: string; updated_at?: string }; Update: { balance_cents?: number; updated_at?: string }; Relationships: [] }
+      demo_transfers: { Row: { id: string; request_id: string; sender_id: string; recipient_id: string; source_account_id: string; destination_account_id: string; amount_cents: number; created_at: string }; Insert: { id?: string; request_id: string; sender_id: string; recipient_id: string; source_account_id: string; destination_account_id: string; amount_cents: number; created_at?: string }; Update: {}; Relationships: [] }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      send_demo_transfer: { Args: { p_recipient_id: string; p_source_type: string; p_amount_cents: number; p_request_id: string }; Returns: string }
     }
     Enums: {
       [_ in never]: never
