@@ -23,7 +23,7 @@ import { Phone, Stage, PageHeading } from "@/components/phone";
 import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/components/session";
-import campusImage from "@/assets/campus.jpg";
+const campusImage = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=85";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
