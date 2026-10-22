@@ -59,7 +59,12 @@ function AuthPage() {
         await navigate({ to: "/dashboard" });
       }
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong. Please try again.");
+      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
+      if (/failed to fetch|networkerror|network request failed|load failed/i.test(message)) {
+        setError("Could not reach the $yllabus authentication server. Check your connection and browser extensions. If it continues, contact support with the failed request from Developer Tools → Network. Your account has not been confirmed as created.");
+      } else {
+        setError(message);
+      }
     } finally {
       setBusy(false);
     }
