@@ -10,15 +10,23 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as CampusRouteImport } from './routes/campus'
 import { Route as ConfirmationRouteImport } from './routes/confirmation'
 import { Route as DashboardRouteImport } from './routes/dashboard'
 import { Route as SendRouteImport } from './routes/send'
+import { Route as SettingsRouteImport } from './routes/settings'
 import { Route as WalletRouteImport } from './routes/wallet'
+import { Route as AuthCallbackRouteImport } from './routes/auth/callback'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CampusRoute = CampusRouteImport.update({
@@ -41,59 +49,100 @@ const SendRoute = SendRouteImport.update({
   path: '/send',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SettingsRoute = SettingsRouteImport.update({
+  id: '/settings',
+  path: '/settings',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const WalletRoute = WalletRouteImport.update({
   id: '/wallet',
   path: '/wallet',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthCallbackRoute = AuthCallbackRouteImport.update({
+  id: '/callback',
+  path: '/callback',
+  getParentRoute: () => AuthRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/campus': typeof CampusRoute
   '/confirmation': typeof ConfirmationRoute
   '/dashboard': typeof DashboardRoute
   '/send': typeof SendRoute
+  '/settings': typeof SettingsRoute
   '/wallet': typeof WalletRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/campus': typeof CampusRoute
   '/confirmation': typeof ConfirmationRoute
   '/dashboard': typeof DashboardRoute
   '/send': typeof SendRoute
+  '/settings': typeof SettingsRoute
   '/wallet': typeof WalletRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRouteWithChildren
   '/campus': typeof CampusRoute
   '/confirmation': typeof ConfirmationRoute
   '/dashboard': typeof DashboardRoute
   '/send': typeof SendRoute
+  '/settings': typeof SettingsRoute
   '/wallet': typeof WalletRoute
+  '/auth/callback': typeof AuthCallbackRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
-    '/' | '/campus' | '/confirmation' | '/dashboard' | '/send' | '/wallet'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/campus' | '/confirmation' | '/dashboard' | '/send' | '/wallet'
-  id:
-    | '__root__'
     | '/'
+    | '/auth'
     | '/campus'
     | '/confirmation'
     | '/dashboard'
     | '/send'
+    | '/settings'
     | '/wallet'
+    | '/auth/callback'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/auth'
+    | '/campus'
+    | '/confirmation'
+    | '/dashboard'
+    | '/send'
+    | '/settings'
+    | '/wallet'
+    | '/auth/callback'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/campus'
+    | '/confirmation'
+    | '/dashboard'
+    | '/send'
+    | '/settings'
+    | '/wallet'
+    | '/auth/callback'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRouteWithChildren
   CampusRoute: typeof CampusRoute
   ConfirmationRoute: typeof ConfirmationRoute
   DashboardRoute: typeof DashboardRoute
   SendRoute: typeof SendRoute
+  SettingsRoute: typeof SettingsRoute
   WalletRoute: typeof WalletRoute
 }
 
@@ -104,6 +153,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/campus': {
@@ -134,6 +190,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof SendRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/settings': {
+      id: '/settings'
+      path: '/settings'
+      fullPath: '/settings'
+      preLoaderRoute: typeof SettingsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/wallet': {
       id: '/wallet'
       path: '/wallet'
@@ -141,15 +204,34 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof WalletRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/auth/callback': {
+      id: '/auth/callback'
+      path: '/callback'
+      fullPath: '/auth/callback'
+      preLoaderRoute: typeof AuthCallbackRouteImport
+      parentRoute: typeof AuthRoute
+    }
   }
 }
 
+interface AuthRouteChildren {
+  AuthCallbackRoute: typeof AuthCallbackRoute
+}
+
+const AuthRouteChildren: AuthRouteChildren = {
+  AuthCallbackRoute: AuthCallbackRoute,
+}
+
+const AuthRouteWithChildren = AuthRoute._addFileChildren(AuthRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRouteWithChildren,
   CampusRoute: CampusRoute,
   ConfirmationRoute: ConfirmationRoute,
   DashboardRoute: DashboardRoute,
   SendRoute: SendRoute,
+  SettingsRoute: SettingsRoute,
   WalletRoute: WalletRoute,
 }
 export const routeTree = rootRouteImport
