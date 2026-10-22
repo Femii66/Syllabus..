@@ -1,6 +1,7 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { Check, CreditCard } from "lucide-react";
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 import { Phone, Stage, TabBar } from "@/components/phone";
 
 export const Route = createFileRoute("/send")({
@@ -34,6 +35,59 @@ function Send() {
   const [mode, setMode] = useState<"send" | "receive">("send");
   const [amount, setAmount] = useState("");
   const [source, setSource] = useState<SourceId>("debit");
+  const [signedIn, setSignedIn] = useState(false);
+  const [recipientEmail, setRecipientEmail] = useState("");
+  const [recipient, setRecipient] = useState<{ id: string; display_name: string } | null>(null);
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
+
+  useEffect(() => {
+    let active = true;
+    void supabase.auth.getUser().then(({ data }) => { if (active) setSignedIn(!!data.user); });
+    return () => { active = false; };
+  }, []);
+
+  async function findRecipient() {
+    setBusy(true);
+    setError("");
+    setNotice("");
+    setRecipient(null);
+    try {
+      const { data, error: lookupError } = await supabase.rpc("find_demo_recipient", { p_email: recipientEmail.trim() });
+      if (lookupError) throw lookupError;
+      if (!data?.length) { setNotice("No eligible student found for that exact email."); return; }
+      setRecipient(data[0]);
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Unable to find recipient.");
+    } finally { setBusy(false); }
+  }
+
+  async function submitTransfer() {
+    if (busy || numeric <= 0) return;
+    if (!signedIn) {
+      await navigate({ to: "/confirmation", search: { amount: numeric, mode, source } });
+      return;
+    }
+    if (mode !== "send") { setError("Demo payment requests are not available for registered accounts yet."); return; }
+    if (source !== "debit") { setError("Student ID funds are not connected yet. Choose Checking."); return; }
+    if (!recipient) { setError("Find and select a recipient first."); return; }
+    const cents = Math.round(numeric * 100);
+    if (!Number.isSafeInteger(cents) || cents < 1 || cents > 100000000) { setError("Enter a valid amount."); return; }
+    setBusy(true);
+    setError("");
+    try {
+      const requestId = crypto.randomUUID();
+      const { data, error: transferError } = await supabase.rpc("send_demo_transfer", {
+        p_recipient_id: recipient.id, p_source_type: "checking", p_amount_cents: cents, p_request_id: requestId,
+      });
+      if (transferError) throw transferError;
+      if (!data) throw new Error("Transfer could not be confirmed.");
+      await navigate({ to: "/confirmation", search: { amount: numeric, mode: "send", source, transferId: data } });
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Transfer failed. Your balance was not confirmed.");
+    } finally { setBusy(false); }
+  }
 
   function press(key: string) {
     setAmount((current) => {
@@ -65,11 +119,19 @@ function Send() {
           </button>
         </div>
 
+        {signedIn && <div className="mt-3 space-y-2">
+          <label className="block text-xs font-semibold">Recipient's exact email
+            <input type="email" value={recipientEmail} onChange={(e) => { setRecipientEmail(e.target.value); setRecipient(null); }}
+              placeholder="student@example.com" className="mt-1 w-full rounded-xl bg-white/70 p-2 text-sm ring-1 ring-ink/10" />
+          </label>
+          <button type="button" disabled={busy || !recipientEmail.includes("@")} onClick={() => void findRecipient()}
+            className="rounded-xl bg-ink px-3 py-2 text-xs font-semibold text-paper disabled:opacity-40">Find student</button>
+        </div>}
         <div className="glass mt-3 flex items-center gap-3 rounded-2xl p-3 ring-1 ring-white/60">
           <div className="grid size-9 place-items-center rounded-full bg-accent/15 text-sm font-semibold text-accent">
-            JO
+            {signedIn ? (recipient?.display_name.slice(0, 2).toUpperCase() ?? "?") : "JO"}
           </div>
-          <div className="text-sm font-semibold">Jordan Okafor</div>
+          <div className="text-sm font-semibold">{signedIn ? (recipient?.display_name ?? "Select a recipient") : "Jordan Okafor"}</div>
           <span className="ml-auto text-xs text-ink/40">›</span>
         </div>
 
@@ -123,17 +185,15 @@ function Send() {
           ))}
         </div>
 
+        {signedIn && <p className="mt-2 text-center text-[10px] text-ink/50">Registered beta: checking balance only · simulated money</p>}
+        {error && <p role="alert" className="mt-2 text-xs text-red-700">{error}</p>}
+        {notice && <p role="status" className="mt-2 text-xs text-ink/60">{notice}</p>}
         <button
-          disabled={numeric <= 0}
-          onClick={() =>
-            navigate({
-              to: "/confirmation",
-              search: { amount: numeric, mode, source },
-            })
-          }
+          disabled={busy || numeric <= 0 || (signedIn && (mode !== "send" || source !== "debit" || !recipient))}
+          onClick={() => void submitTransfer()}
           className="mt-4 w-full rounded-2xl bg-ink py-4 text-sm font-semibold text-paper transition-transform duration-300 hover:-translate-y-0.5 disabled:opacity-40 disabled:hover:translate-y-0"
         >
-          {mode === "send" ? "Send" : "Request"}
+          {busy ? "Please wait…" : mode === "send" ? "Send" : "Request"}
         </button>
 
         <TabBar />
