@@ -22,6 +22,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_overview: { Args: Record<string, never>; Returns: Json }
       find_demo_recipient: { Args: { p_email: string }; Returns: { id: string; display_name: string }[] }
       send_demo_transfer: { Args: { p_recipient_id: string; p_source_type: string; p_amount_cents: number; p_request_id: string }; Returns: string }
     }
