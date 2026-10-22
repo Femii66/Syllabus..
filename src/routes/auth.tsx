@@ -1,121 +1,212 @@
-import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
-import { useState, type FormEvent } from "react";
-import { ArrowLeft } from "lucide-react";
-import { Logo, Phone, Stage } from "@/components/phone";
+import { createFileRoute, Link, useNavigate, Outlet, useRouterState } from "@tanstack/react-router";
+import { useState } from "react";
+import { ArrowRight, LoaderCircle, Mail, ShieldCheck } from "lucide-react";
+import { Stage } from "@/components/phone";
+import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-
+import { configError, useSession } from "@/components/session";
+import { authErrorMessage, isValidEmail } from "@/lib/auth-errors";
 export const Route = createFileRoute("/auth")({
-  head: () => ({ meta: [{ title: "Sign in — $yllabus" }] }),
-  component: AuthPage,
+  head: () => ({
+    meta: [
+      { title: "Student sign in — $yllabus" },
+      {
+        name: "description",
+        content: "Sign in or create your student $yllabus account with email verification.",
+      },
+      { property: "og:title", content: "Student sign in — $yllabus" },
+      { property: "og:description", content: "Secure student email sign in and account creation." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary_large_image" },
+    ],
+  }),
+  component: AuthLayout,
 });
-
-function AuthPage() {
-  const navigate = useNavigate();
-  const [mode, setMode] = useState<"login" | "signup" | "reset">("login");
-  const [name, setName] = useState("");
+function AuthLayout() {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  return path === "/auth" ? <Auth /> : <Outlet />;
+}
+function Auth() {
+  const [mode, setMode] = useState<"signin" | "signup" | "reset">("signin");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState("");
   const [notice, setNotice] = useState("");
-
-  function switchMode(next: typeof mode) {
-    setMode(next);
+  const navigate = useNavigate();
+  const { user } = useSession();
+  async function submit(e: React.FormEvent) {
+    e.preventDefault();
     setError("");
     setNotice("");
-  }
-
-  async function submit(event: FormEvent<HTMLFormElement>) {
-    event.preventDefault();
-    if (busy) return;
+    const cfg = configError();
+    if (cfg) {
+      setError(cfg);
+      return;
+    }
+    if (!isValidEmail(email)) {
+      setError("Please enter a valid email address.");
+      return;
+    }
     setBusy(true);
-    setError("");
-    setNotice("");
     try {
+      const redirect = `${window.location.origin}/auth/callback`;
       if (mode === "reset") {
         const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
-          redirectTo: window.location.origin + "/auth",
+          redirectTo: redirect,
         });
         if (error) throw error;
-        setNotice("If this email has an account, password recovery instructions have been sent.");
+        setNotice("If an account exists, a password-reset link is on its way. Check your inbox.");
       } else if (mode === "signup") {
         const { data, error } = await supabase.auth.signUp({
           email: email.trim(),
           password,
-          options: { data: { full_name: name.trim() } },
+          options: { emailRedirectTo: redirect, data: { full_name: name.trim() } },
         });
         if (error) throw error;
         if (data.session) {
+          setNotice("Account created successfully. Taking you to your dashboard…");
           await navigate({ to: "/dashboard" });
         } else {
-          setNotice("Check your inbox to confirm your email, then sign in.");
+          setNotice("Account created successfully. You can sign in now.");
+          setMode("signin");
         }
       } else {
-        const { error } = await supabase.auth.signInWithPassword({
-          email: email.trim(),
-          password,
-        });
+        const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password });
         if (error) throw error;
         await navigate({ to: "/dashboard" });
       }
-    } catch (err) {
-      const message = err instanceof Error ? err.message : "Something went wrong. Please try again.";
-      if (/failed to fetch|networkerror|network request failed|load failed/i.test(message)) {
-        setError("Could not reach the $yllabus authentication server. Check your connection and browser extensions. If it continues, contact support with the failed request from Developer Tools → Network. Your account has not been confirmed as created.");
-      } else {
-        setError(message);
-      }
+    } catch (e) {
+      setError(authErrorMessage(e));
     } finally {
       setBusy(false);
     }
   }
-
   return (
     <Stage>
-      <Phone className="flex flex-col p-6 md:p-10">
-        <div className="flex items-center justify-between">
-          <Logo />
-          <Link to="/" aria-label="Back to welcome" className="rounded-full p-2 text-ink/60">
-            <ArrowLeft className="size-5" />
-          </Link>
+      <div className="mx-auto max-w-md px-6 pb-20 pt-12">
+        <div className="mb-8 grid size-12 place-items-center rounded-lg bg-brand-soft text-primary">
+          <ShieldCheck />
         </div>
-        <div className="mx-auto my-auto w-full max-w-md">
-          <h1 className="text-center font-display text-3xl font-bold">
-            {mode === "login" ? "Welcome back." : mode === "signup" ? "Join $yllabus." : "Reset password."}
-          </h1>
-          <p className="mt-2 text-center text-sm text-ink/60">
-            {mode === "login" ? "Sign in to your student account." : mode === "signup" ? "Create your beta account with any valid email." : "We'll email you a recovery link."}
-          </p>
-          <form onSubmit={submit} className="mt-7 space-y-4">
+        <h1 className="font-display text-3xl font-bold">
+          {mode === "signup"
+            ? "Create your account"
+            : mode === "reset"
+              ? "Reset your password"
+              : "Welcome back."}
+        </h1>
+        <p className="mt-3 text-sm text-muted-foreground">
+          {mode === "signup"
+            ? "Create your account in seconds with name, email and password."
+            : "Sign in to your student account."}
+        </p>
+        {user ? (
+          <div className="mt-8 space-y-4">
+            <p className="text-sm">You’re already signed in.</p>
+            <Button asChild>
+              <Link to="/dashboard">
+                Go to Home <ArrowRight />
+              </Link>
+            </Button>
+          </div>
+        ) : (
+          <form onSubmit={submit} className="mt-8 space-y-5">
             {mode === "signup" && (
-              <label className="block text-xs font-semibold">Full name
-                <input required maxLength={100} autoComplete="name" value={name} onChange={(e) => setName(e.target.value)} className="mt-2 w-full rounded-2xl bg-white/65 p-3 text-sm ring-1 ring-ink/10 outline-none focus:ring-accent" placeholder="Your name" />
+              <label className="block text-sm font-medium">
+                Full name
+                <input
+                  required
+                  autoComplete="name"
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  className="mt-2 h-12 w-full rounded-md border bg-card px-4 text-foreground"
+                />
               </label>
             )}
-            <label className="block text-xs font-semibold">Email address
-              <input type="email" required autoComplete="email" value={email} onChange={(e) => setEmail(e.target.value)} className="mt-2 w-full rounded-2xl bg-white/65 p-3 text-sm ring-1 ring-ink/10 outline-none focus:ring-accent" placeholder="you@example.com" />
+            <label className="block text-sm font-medium">
+              Email address
+              <input
+                required
+                type="email"
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="you@example.com"
+                className="mt-2 h-12 w-full rounded-md border bg-card px-4 text-foreground"
+              />
             </label>
             {mode !== "reset" && (
-              <label className="block text-xs font-semibold">Password
-                <input type="password" required minLength={6} autoComplete={mode === "signup" ? "new-password" : "current-password"} value={password} onChange={(e) => setPassword(e.target.value)} className="mt-2 w-full rounded-2xl bg-white/65 p-3 text-sm ring-1 ring-ink/10 outline-none focus:ring-accent" placeholder="Your password" />
+              <label className="block text-sm font-medium">
+                Password
+                <input
+                  required
+                  type="password"
+                  minLength={mode === "signup" ? 8 : 1}
+                  autoComplete={mode === "signup" ? "new-password" : "current-password"}
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  className="mt-2 h-12 w-full rounded-md border bg-card px-4 text-foreground"
+                />
               </label>
             )}
-            {error && <p role="alert" className="text-xs text-red-700">{error}</p>}
-            {notice && <p role="status" className="text-xs text-accent">{notice}</p>}
-            <button type="submit" disabled={busy} className="w-full rounded-2xl bg-ink px-5 py-4 text-sm font-semibold text-paper disabled:opacity-50">
-              {busy ? "Please wait…" : mode === "login" ? "Sign in" : mode === "signup" ? "Create account" : "Send recovery email"}
-            </button>
+            {error && (
+              <p
+                role="alert"
+                className="rounded-md border border-destructive/30 bg-card p-4 text-sm leading-6 text-destructive"
+              >
+                {error}
+              </p>
+            )}
+            {notice && (
+              <p
+                role="status"
+                className="rounded-md bg-success-soft p-4 text-sm leading-6 text-success"
+              >
+                <Mail className="mb-2 size-5" />
+                {notice}
+              </p>
+            )}
+            <Button disabled={busy} className="h-12 w-full" type="submit">
+              {busy ? <LoaderCircle className="animate-spin" /> : null}
+              {mode === "signup"
+                ? "Create account"
+                : mode === "reset"
+                  ? "Send reset link"
+                  : "Sign in"}
+              <ArrowRight />
+            </Button>
+            <div className="flex flex-wrap justify-between gap-2">
+              <Button
+                type="button"
+                variant="link"
+                className="px-0"
+                onClick={() => {
+                  setMode(mode === "signup" ? "signin" : "signup");
+                  setError("");
+                }}
+              >
+                {mode === "signup"
+                  ? "Already have an account? Sign in"
+                  : "New to $yllabus? Create an account"}
+              </Button>
+              {mode === "signin" && (
+                <Button
+                  type="button"
+                  variant="link"
+                  className="px-0"
+                  onClick={() => setMode("reset")}
+                >
+                  Forgot password?
+                </Button>
+              )}
+            </div>
           </form>
-          <div className="mt-5 flex flex-col items-center gap-3 text-xs">
-            {mode === "login" && <button type="button" onClick={() => switchMode("reset")} className="font-semibold text-accent">Forgot password?</button>}
-            <button type="button" onClick={() => switchMode(mode === "signup" ? "login" : "signup")} className="font-semibold text-ink/70">
-              {mode === "signup" ? "Already have an account? Sign in" : "New to $yllabus? Create an account"}
-            </button>
-            {mode === "reset" && <button type="button" onClick={() => switchMode("login")} className="font-semibold text-ink/70">Back to sign in</button>}
-          </div>
-        </div>
-        <p className="text-center text-[11px] text-ink/45">Beta experience · No real banking transactions</p>
-      </Phone>
+        )}
+        <p className="mt-10 border-t pt-5 text-xs leading-6 text-muted-foreground">
+          Secure password sign-in · Simulated banking only
+        </p>
+      </div>
     </Stage>
   );
 }
