@@ -36,6 +36,8 @@ const recent = [
 ];
 
 function Dashboard() {
+  const [transfers, setTransfers] = useState<{ id: string; amount_cents: number; sender_id: string; recipient_id: string }[]>([]);
+  const [studentId, setStudentId] = useState<string | null>(null);
   const [balances, setBalances] = useState<{ checking: number; savings: number } | null>(null);
   const [isSignedIn, setIsSignedIn] = useState(false);
   const formatMoney = (cents: number) => (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
@@ -53,12 +55,18 @@ function Dashboard() {
         if (!active) return;
         if (!user) {
           setIsSignedIn(false);
+          setStudentId(null);
+          setTransfers([]);
           setBalances(null);
           setName("Maya");
           setInitials("MK");
           return;
         }
         setIsSignedIn(true);
+        setStudentId(user.id);
+        const { data: transferRows } = await supabase.from("demo_transfers").select("id,amount_cents,sender_id,recipient_id").order("created_at", { ascending: false }).limit(4);
+        if (!active) return;
+        setTransfers(transferRows ?? []);
         const { data: accounts } = await supabase.from("demo_financial_accounts").select("account_type,balance_cents").eq("student_id", user.id);
         if (!active) return;
         if (accounts) {
@@ -123,7 +131,7 @@ function Dashboard() {
           Recent
         </p>
         <div className="mt-2 space-y-1.5 text-sm">
-          {recent.map((r) => (
+          {(isSignedIn ? transfers.map((t) => ({ name: t.sender_id === studentId ? "Demo transfer sent" : "Demo transfer received", amount: (t.sender_id === studentId ? "−" : "+") + formatMoney(t.amount_cents), positive: t.recipient_id === studentId })) : recent).map((r) => (
             <div key={r.name} className="flex items-center justify-between rounded-xl px-1 py-1.5">
               <span className="text-ink/80">{r.name}</span>
               <span
@@ -135,6 +143,7 @@ function Dashboard() {
           ))}
         </div>
 
+        {isSignedIn && transfers.length === 0 && <p className="text-xs text-ink/45">No demo transfers yet.</p>}
         <TabBar />
       </Phone>
     </Stage>
