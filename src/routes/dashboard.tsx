@@ -23,7 +23,7 @@ export const Route = createFileRoute("/dashboard")({
   component: Dashboard,
 });
 
-const money = [
+const demoMoney = [
   { label: "Savings", value: "$8,120.00" },
   { label: "Checking", value: "$2,480.55" },
 ];
@@ -36,6 +36,12 @@ const recent = [
 ];
 
 function Dashboard() {
+  const [balances, setBalances] = useState<{ checking: number; savings: number } | null>(null);
+  const [isSignedIn, setIsSignedIn] = useState(false);
+  const formatMoney = (cents: number) => (cents / 100).toLocaleString("en-US", { style: "currency", currency: "USD" });
+  const money = isSignedIn
+    ? [{ label: "Savings", value: balances ? formatMoney(balances.savings) : "—" }, { label: "Checking", value: balances ? formatMoney(balances.checking) : "—" }]
+    : demoMoney;
   const [name, setName] = useState("Maya");
   const [initials, setInitials] = useState("MK");
 
@@ -46,9 +52,20 @@ function Dashboard() {
         const { data: { user } } = await supabase.auth.getUser();
         if (!active) return;
         if (!user) {
+          setIsSignedIn(false);
+          setBalances(null);
           setName("Maya");
           setInitials("MK");
           return;
+        }
+        setIsSignedIn(true);
+        const { data: accounts } = await supabase.from("demo_financial_accounts").select("account_type,balance_cents").eq("student_id", user.id);
+        if (!active) return;
+        if (accounts) {
+          const checking = accounts.find((account) => account.account_type === "checking");
+          const savings = accounts.find((account) => account.account_type === "savings");
+          if (checking && savings) setBalances({ checking: Number(checking.balance_cents), savings: Number(savings.balance_cents) });
+          else setBalances(null);
         }
         const { data: profile } = await supabase
           .from("profiles")
@@ -79,14 +96,14 @@ function Dashboard() {
             <p className="font-display text-lg font-bold leading-tight">{name}</p>
           </div>
           <div className="grid size-9 place-items-center rounded-full bg-violet/15 text-sm font-semibold text-violet">
-            MK
+            {initials}
           </div>
         </div>
 
         <div className="glass mt-4 rounded-3xl p-4 ring-1 ring-white/60">
           <p className="text-[11px] uppercase tracking-[0.14em] text-ink/45">Checking · Available</p>
           <p className="tnum mt-1 font-display text-4xl font-bold tracking-tight">
-            $2,480<span className="align-top text-2xl">.55</span>
+            {isSignedIn ? (balances ? formatMoney(balances.checking) : "—") : <>$2,480<span className="align-top text-2xl">.55</span></>}
           </p>
         </div>
 
