@@ -138,3 +138,44 @@
     transition: none;
   }
 }
+
+
+/* Optional dark mode. Original Lime Campus Glass light theme remains unchanged. */
+:root.dark {
+  color-scheme: dark;
+  --ink: hsl(82 40% 94%);
+  --paper: hsl(112 24% 11%);
+  --ice: hsl(112 22% 8%);
+  --accent: hsl(104 66% 69%);
+  --accent-foreground: hsl(112 30% 9%);
+  --gold: hsl(65 82% 54%);
+  --violet: hsl(92 66% 62%);
+  --background: var(--ice);
+  --foreground: var(--ink);
+  --card: hsl(112 19% 17% / 0.85);
+  --card-foreground: var(--ink);
+  --popover: hsl(112 21% 15%);
+  --popover-foreground: var(--ink);
+  --primary: var(--ink);
+  --primary-foreground: hsl(112 24% 10%);
+  --secondary: hsl(112 19% 22%);
+  --secondary-foreground: var(--ink);
+  --muted: hsl(112 19% 22%);
+  --muted-foreground: hsl(96 15% 72%);
+  --border: hsl(82 40% 94% / 0.14);
+  --input: hsl(82 40% 94% / 0.2);
+  --ring: var(--accent);
+}
+:root.dark .glass {
+  background: linear-gradient(150deg, hsl(112 20% 20% / 0.92), hsl(112 24% 12% / 0.86));
+}
+:root.dark .screen-panel {
+  background-image: linear-gradient(to bottom, hsl(112 22% 16% / 0.96), hsl(112 22% 10% / 0.95));
+  box-shadow: inset 0 0 0 1px hsl(82 40% 94% / 0.14);
+}
+:root.dark .bg-white\/65, :root.dark .bg-white\/60, :root.dark .bg-white\/40 {
+  background-color: hsl(112 18% 24% / 0.85);
+}
+:root.dark .ring-white\/60 { --tw-ring-color: hsl(82 40% 94% / 0.12); }
+:root.dark input, :root.dark textarea { color: var(--ink); }
+:root.dark input::placeholder, :root.dark textarea::placeholder { color: hsl(96 15% 70%); }
