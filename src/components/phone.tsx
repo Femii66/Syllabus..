@@ -36,7 +36,7 @@ export function Stage({ children }: { children: ReactNode }) {
     <div className="relative min-h-screen w-full overflow-x-hidden bg-ice font-body text-ink">
       <Aurora />
       <ThemeToggle />
-      <div className="relative flex min-h-screen items-center justify-center px-4 py-10">
+      <div className="relative flex min-h-screen w-full items-center justify-center px-3 py-3 md:px-6 md:py-6">
         {children}
       </div>
     </div>
@@ -45,7 +45,7 @@ export function Stage({ children }: { children: ReactNode }) {
 
 export function Phone({ children, className = "" }: { children: ReactNode; className?: string }) {
   return (
-    <div className={`screen-panel h-[720px] w-[355px] shrink-0 ${className}`}>{children}</div>
+    <div className={`screen-panel min-h-[calc(100dvh-1.5rem)] w-full max-w-none shrink-0 md:min-h-[calc(100dvh-3rem)] md:rounded-[2rem] ${className}`}>{children}</div>
   );
 }
 
