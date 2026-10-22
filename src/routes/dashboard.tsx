@@ -1,5 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Phone, Stage, TabBar } from "@/components/phone";
+import { useEffect, useState } from "react";
+import { supabase } from "@/integrations/supabase/client";
 
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
@@ -34,6 +36,39 @@ const recent = [
 ];
 
 function Dashboard() {
+  const [name, setName] = useState("Maya");
+  const [initials, setInitials] = useState("MK");
+
+  useEffect(() => {
+    let active = true;
+    async function refresh() {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!active) return;
+        if (!user) {
+          setName("Maya");
+          setInitials("MK");
+          return;
+        }
+        const { data: profile } = await supabase
+          .from("profiles")
+          .select("full_name")
+          .eq("id", user.id)
+          .maybeSingle();
+        if (!active) return;
+        const fullName = profile?.full_name || user.user_metadata?.full_name || user.email?.split("@")[0] || "Student";
+        const parts = String(fullName).trim().split(" ").filter(Boolean);
+        setName(parts[0] || "Student");
+        setInitials((parts.length > 1 ? parts[0][0] + parts[parts.length - 1][0] : (parts[0] || "ST").slice(0, 2)).toUpperCase());
+      } catch {
+        // Keep the demo identity if authentication is unavailable.
+      }
+    }
+    void refresh();
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(() => { void refresh(); });
+    return () => { active = false; subscription.unsubscribe(); };
+  }, []);
+
   return (
     <Stage>
       <Phone className="p-6">
@@ -41,7 +76,7 @@ function Dashboard() {
         <div className="flex items-center justify-between">
           <div>
             <p className="text-xs text-ink/50">Good afternoon</p>
-            <p className="font-display text-lg font-bold leading-tight">Maya</p>
+            <p className="font-display text-lg font-bold leading-tight">{name}</p>
           </div>
           <div className="grid size-9 place-items-center rounded-full bg-violet/15 text-sm font-semibold text-violet">
             MK
