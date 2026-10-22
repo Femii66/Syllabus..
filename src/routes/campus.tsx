@@ -1,21 +1,23 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { BookOpen, ChevronRight, GraduationCap, ReceiptText, Trophy, Utensils } from "lucide-react";
-import { Phone, Stage, TabBar } from "@/components/phone";
-
+import { BookOpen, GraduationCap, ReceiptText, Trophy, Utensils } from "lucide-react";
+import { Phone, Stage, PageHeading } from "@/components/phone";
 export const Route = createFileRoute("/campus")({
   head: () => ({
     meta: [
       { title: "Campus — $yllabus" },
-      { name: "description", content: "View Bulldog Bucks, school funding, benefits, and your 2026–2027 account summary." },
+      {
+        name: "description",
+        content:
+          "Bulldog Bucks, meal swipes, vouchers, stipends and your 2026–2027 account summary.",
+      },
       { property: "og:title", content: "Campus — $yllabus" },
-      { property: "og:description", content: "Your campus balances and school account in one place." },
+      { property: "og:description", content: "Your campus balances and benefits in one place." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Campus,
 });
-
 const accounts = [
   { label: "Bulldog Bucks", value: "$62.20", icon: GraduationCap },
   { label: "Meal swipes", value: "14 left", icon: Utensils },
@@ -23,54 +25,54 @@ const accounts = [
   { label: "Book stipend", value: "$425.00", icon: BookOpen },
   { label: "NIL", value: "$1,150.00", icon: Trophy },
   { label: "Refund Check", value: "$1,284.65", icon: ReceiptText },
-] as const;
-
+];
 function Campus() {
   return (
     <Stage>
-      <Phone className="p-5">
-        <div className="flex items-center gap-3">
-          <div className="grid size-10 place-items-center rounded-xl bg-ink text-paper">
-            <GraduationCap className="size-5" aria-hidden="true" />
-          </div>
-          <div>
-            <p className="font-display text-lg font-bold">Campus</p>
-            <p className="text-xs text-ink/50">Fall 2026 · State University</p>
-          </div>
+      <Phone>
+        <PageHeading title="Campus" subtitle="Fall 2026 · State University" />
+        <div className="mb-8 border-y py-7">
+          <p className="text-sm text-muted-foreground">Available campus funds</p>
+          <p className="tnum mt-3 text-4xl font-semibold">$3,071.85</p>
         </div>
-
-        <div className="glass mt-5 rounded-2xl p-4 ring-1 ring-white/60">
-          <p className="text-[11px] font-semibold uppercase tracking-[0.14em] text-ink/45">Available campus funds</p>
-          <p className="tnum mt-1 font-display text-3xl font-bold">$3,071.85</p>
-        </div>
-
-        <div className="mt-4 grid grid-cols-2 gap-2">
-          {accounts.map((account) => {
-            const Icon = account.icon;
-            return (
-              <div key={account.label} className="glass min-h-20 rounded-2xl p-3 ring-1 ring-white/60">
-                <div className="flex items-center justify-between">
-                  <Icon className="size-4 text-accent" aria-hidden="true" />
-                  <ChevronRight className="size-3.5 text-ink/30" aria-hidden="true" />
-                </div>
-                <p className="mt-2 text-[10px] text-ink/50">{account.label}</p>
-                <p className="tnum font-display text-base font-bold">{account.value}</p>
+        <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
+          {accounts.map((a) => (
+            <article key={a.label} className="glass p-6">
+              <div className="mb-6 flex items-center gap-3">
+                <span className="grid size-10 place-items-center rounded-lg bg-brand-soft text-primary">
+                  <a.icon className="size-5" />
+                </span>
+                <h2 className="text-sm font-semibold">{a.label}</h2>
               </div>
-            );
-          })}
+              <p className="tnum text-3xl font-semibold">{a.value}</p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                {a.label === "Meal swipes" ? "Remaining this week" : "Available balance"}
+              </p>
+            </article>
+          ))}
         </div>
-
-        <div className="mt-3 flex items-center justify-between rounded-2xl bg-ink p-4 text-paper">
-          <div>
-            <p className="text-[10px] text-paper/55">Academic year</p>
-            <p className="font-display text-sm font-semibold">2026–2027 Account Summary</p>
+        <section className="mt-10">
+          <h2 className="text-xl font-semibold">2026–2027 Account Summary</h2>
+          <p className="mb-5 mt-2 text-sm text-muted-foreground">Academic year · Demo account</p>
+          <div className="overflow-hidden rounded-lg border bg-card">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>Campus account</th>
+                  <th>Available</th>
+                </tr>
+              </thead>
+              <tbody>
+                {accounts.map((a) => (
+                  <tr key={a.label}>
+                    <td className="font-medium">{a.label}</td>
+                    <td className="tnum">{a.value}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
           </div>
-          <ChevronRight className="size-4" aria-hidden="true" />
-        </div>
-
-        <div className="mt-auto">
-          <TabBar />
-        </div>
+        </section>
       </Phone>
     </Stage>
   );
