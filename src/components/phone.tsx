@@ -1,90 +1,166 @@
-import { Link } from "@tanstack/react-router";
-import { GraduationCap, House, Moon, Send, Sun, WalletCards } from "lucide-react";
-import { useEffect, useState, type ReactNode } from "react";
-
+import { Link, useRouterState } from "@tanstack/react-router";
+import {
+  GraduationCap,
+  House,
+  Send,
+  WalletCards,
+  Settings,
+  ArrowUpRight,
+  ShieldCheck,
+} from "lucide-react";
+import type { ReactNode } from "react";
+import { Button } from "@/components/ui/button";
+import { ThemeToggle } from "@/components/theme";
+import { useSession } from "@/components/session";
 export function Aurora() {
-  return (
-    <>
-      <div className="pointer-events-none absolute -left-20 top-10 size-[380px] rounded-full bg-violet/25 blur-3xl" />
-      <div className="pointer-events-none absolute right-0 top-1/3 size-[300px] rounded-full bg-accent/25 blur-3xl" />
-      <div className="pointer-events-none absolute bottom-0 left-1/3 size-[320px] rounded-full bg-gold/25 blur-3xl" />
-    </>
-  );
+  return null;
 }
-
-function ThemeToggle() {
-  const [dark, setDark] = useState(false);
-  useEffect(() => {
-    const saved = window.localStorage.getItem("syllabus-theme");
-    const enabled = saved === "dark" || (saved === null && window.matchMedia("(prefers-color-scheme: dark)").matches);
-    document.documentElement.classList.toggle("dark", enabled);
-    setDark(enabled);
-  }, []);
-  function toggle() {
-    const next = !dark;
-    document.documentElement.classList.toggle("dark", next);
-    window.localStorage.setItem("syllabus-theme", next ? "dark" : "light");
-    setDark(next);
-  }
-  return <button type="button" onClick={toggle} aria-label={dark ? "Switch to light mode" : "Switch to dark mode"} title={dark ? "Light mode" : "Dark mode"} className="absolute right-4 top-4 z-50 grid size-10 place-items-center rounded-full bg-paper/80 text-ink shadow-sm ring-1 ring-ink/10 backdrop-blur-sm">
-    {dark ? <Sun className="size-5" /> : <Moon className="size-5" />}
-  </button>;
-}
-
-export function Stage({ children }: { children: ReactNode }) {
-  return (
-    <div className="relative min-h-screen w-full overflow-x-hidden bg-ice font-body text-ink">
-      <Aurora />
-      <ThemeToggle />
-      <div className="relative flex min-h-screen w-full items-center justify-center px-3 py-3 md:px-6 md:py-6">
-        {children}
-      </div>
-    </div>
-  );
-}
-
-export function Phone({ children, className = "" }: { children: ReactNode; className?: string }) {
-  return (
-    <div className={`screen-panel min-h-[calc(100dvh-1.5rem)] w-full max-w-none shrink-0 md:min-h-[calc(100dvh-3rem)] md:rounded-[2rem] ${className}`}>{children}</div>
-  );
-}
-
 export function Logo() {
   return (
-    <div className="flex items-center gap-2">
-      <div className="grid size-9 place-items-center rounded-xl bg-ink font-display text-lg font-bold leading-none text-paper">
+    <Link to="/" className="flex items-center gap-2.5" aria-label="$yllabus home">
+      <span className="grid size-9 place-items-center rounded-lg bg-primary font-display text-xl font-bold text-primary-foreground">
         $
-      </div>
-      <span className="font-display text-lg font-bold tracking-tight">yllabus</span>
-    </div>
+      </span>
+      <span className="font-display text-2xl font-bold">
+        yllabus<span className="text-primary">.</span>
+      </span>
+    </Link>
   );
 }
-
 const tabs = [
   { to: "/dashboard", label: "Home", icon: House },
   { to: "/campus", label: "Campus", icon: GraduationCap },
   { to: "/wallet", label: "Wallet", icon: WalletCards },
   { to: "/send", label: "Send", icon: Send },
+  { to: "/settings", label: "Settings", icon: Settings },
 ] as const;
-
-export function TabBar() {
+export function Stage({ children }: { children: ReactNode }) {
+  const path = useRouterState({ select: (s) => s.location.pathname });
+  const { user } = useSession();
+  const publicPage = path === "/" || path.startsWith("/auth");
+  if (publicPage)
+    return (
+      <div className="min-h-screen bg-background">
+        <header className="mx-auto flex max-w-[1440px] items-center justify-between px-6 py-6 lg:px-12">
+          <Logo />
+          <div className="flex items-center gap-3">
+            <ThemeToggle />
+            <Button asChild variant="outline">
+              <Link to="/dashboard">
+                Guest demo <ArrowUpRight />
+              </Link>
+            </Button>
+          </div>
+        </header>
+        {children}
+      </div>
+    );
   return (
-    <div className="glass mt-4 grid shrink-0 grid-cols-4 gap-1 rounded-2xl p-1 ring-1 ring-white/60">
-      {tabs.map((t) => {
-        const Icon = t.icon;
-        return (
+    <div className="min-h-screen bg-background">
+      <aside className="sidebar">
+        <div className="px-6 py-8">
+          <Logo />
+        </div>
+        <p className="px-6 pb-3 text-xs font-medium text-muted-foreground">YOUR WORKSPACE</p>
+        <nav aria-label="Main navigation" className="space-y-1 px-3">
+          {tabs.map((t) => (
+            <Link
+              key={t.to}
+              to={t.to}
+              className="nav-item"
+              activeProps={{ className: "nav-item active" }}
+            >
+              <t.icon className="size-5" />
+              {t.label}
+            </Link>
+          ))}
+        </nav>
+        <div className="mt-auto p-6">
+          <div className="mb-5 flex items-center gap-2 text-xs text-muted-foreground">
+            <ShieldCheck className="size-4" />
+            Simulated banking only
+          </div>
+          <div className="flex items-center gap-3 border-t pt-5">
+            <span className="avatar">{user ? "ST" : "MK"}</span>
+            <div className="min-w-0">
+              <p className="truncate text-sm font-semibold">
+                {user ? "Student account" : "Maya Kessler"}
+              </p>
+              <p className="text-xs text-muted-foreground">
+                {user ? "Signed in · demo funds" : "Guest demo"}
+              </p>
+            </div>
+          </div>
+        </div>
+      </aside>
+      <div className="workspace">
+        <header className="workspace-header">
+          <div className="flex min-w-0 items-center gap-3">
+            <span className="hidden text-sm text-muted-foreground sm:block">Workspace</span>
+            <span className="hidden text-border sm:block">/</span>
+            <span className="text-sm font-semibold">
+              {tabs.find((t) => t.to === path)?.label ?? "Confirmation"}
+            </span>
+          </div>
+          <div className="flex shrink-0 items-center gap-3">
+            <span className="demo-badge">Demo mode</span>
+            <ThemeToggle />
+            {!user && (
+              <Button asChild variant="outline" size="sm">
+                <Link to="/auth">Sign in</Link>
+              </Button>
+            )}
+            <span className="avatar hidden sm:grid">{user ? "ST" : "MK"}</span>
+          </div>
+        </header>
+        <main className="content-area">
+          {children}
+          <footer className="page-footer">
+            <span>© 2026 $yllabus</span>
+            <span>Demo balances · No real money moves</span>
+          </footer>
+        </main>
+      </div>
+      <nav aria-label="Mobile navigation" className="mobile-nav">
+        {tabs.map((t) => (
           <Link
             key={t.to}
             to={t.to}
-            aria-label={t.label}
-            title={t.label}
-            className="grid h-10 place-items-center rounded-xl text-ink/55 transition-colors"
-            activeProps={{ className: "bg-ink text-paper" }}
+            className="flex min-w-0 flex-col items-center gap-1 py-3 text-[10px] text-muted-foreground"
+            activeProps={{
+              className: "flex min-w-0 flex-col items-center gap-1 py-3 text-[10px] text-primary",
+            }}
           >
-            <Icon className="size-4" aria-hidden="true" />
+            <t.icon className="size-5" />
+            {t.label}
           </Link>
-        );
-      })}
+        ))}
+      </nav>
+    </div>
+  );
+}
+export function Phone({ children, className = "" }: { children: ReactNode; className?: string }) {
+  return <section className={`screen-panel ${className}`}>{children}</section>;
+}
+export function TabBar() {
+  return null;
+}
+export function PageHeading({
+  title,
+  subtitle,
+  action,
+}: {
+  title: string;
+  subtitle: string;
+  action?: ReactNode;
+}) {
+  return (
+    <div className="mb-8 grid grid-cols-[minmax(0,1fr)_auto] items-center gap-4">
+      <div className="min-w-0">
+        <h1 className="font-display text-3xl font-semibold">{title}</h1>
+        <p className="mt-2 text-sm text-muted-foreground">{subtitle}</p>
+      </div>
+      <div className="shrink-0">{action}</div>
     </div>
   );
 }
