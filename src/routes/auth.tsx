@@ -72,18 +72,18 @@ function AuthPage() {
 
   return (
     <Stage>
-      <Phone className="flex flex-col p-6">
+      <Phone className="flex flex-col p-6 md:p-10">
         <div className="flex items-center justify-between">
           <Logo />
           <Link to="/" aria-label="Back to welcome" className="rounded-full p-2 text-ink/60">
             <ArrowLeft className="size-5" />
           </Link>
         </div>
-        <div className="my-auto">
-          <h1 className="font-display text-3xl font-bold">
+        <div className="mx-auto my-auto w-full max-w-md">
+          <h1 className="text-center font-display text-3xl font-bold">
             {mode === "login" ? "Welcome back." : mode === "signup" ? "Join $yllabus." : "Reset password."}
           </h1>
-          <p className="mt-2 text-sm text-ink/60">
+          <p className="mt-2 text-center text-sm text-ink/60">
             {mode === "login" ? "Sign in to your student account." : mode === "signup" ? "Create your beta account with any valid email." : "We'll email you a recovery link."}
           </p>
           <form onSubmit={submit} className="mt-7 space-y-4">
