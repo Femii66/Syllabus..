@@ -1,181 +1,377 @@
-@import "tailwindcss" source(none);
-@source "../src";
+@import "tailwindcss";
 @import "tw-animate-css";
-
-@custom-variant dark (&:is(.dark *));
-
-/*
- * $yllabus design system — "Lime Campus Glass"
- * Frosted lime panels, fresh green blooms, Space Grotesk display numerals.
- */
-
+@custom-variant dark (&:where(.dark, .dark *));
 @theme inline {
-  --radius-sm: calc(var(--radius) - 4px);
-  --radius-md: calc(var(--radius) - 2px);
-  --radius-lg: var(--radius);
-  --radius-xl: calc(var(--radius) + 4px);
-  --radius-2xl: calc(var(--radius) + 8px);
-  --radius-3xl: calc(var(--radius) + 12px);
-  --radius-4xl: calc(var(--radius) + 16px);
-
-  --font-display: var(--font-display-family);
-  --font-body: var(--font-body-family);
-  --font-mono: var(--font-mono-family);
-
-  --color-ink: var(--ink);
-  --color-paper: var(--paper);
-  --color-ice: var(--ice);
-  --color-accent: var(--accent);
-  --color-accent-foreground: var(--accent-foreground);
-  --color-gold: var(--gold);
-  --color-violet: var(--violet);
-
+  --font-display: "Space Grotesk", sans-serif;
+  --font-body: "Inter", sans-serif;
+  --font-mono: "JetBrains Mono", monospace;
   --color-background: var(--background);
   --color-foreground: var(--foreground);
   --color-card: var(--card);
-  --color-card-foreground: var(--card-foreground);
-  --color-popover: var(--popover);
-  --color-popover-foreground: var(--popover-foreground);
+  --color-card-foreground: var(--foreground);
+  --color-popover: var(--card);
+  --color-popover-foreground: var(--foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
-  --color-secondary-foreground: var(--secondary-foreground);
-  --color-muted: var(--muted);
+  --color-secondary-foreground: var(--foreground);
+  --color-muted: var(--secondary);
   --color-muted-foreground: var(--muted-foreground);
-  --color-destructive: var(--destructive);
-  --color-destructive-foreground: var(--destructive-foreground);
+  --color-accent: var(--secondary);
+  --color-accent-foreground: var(--foreground);
   --color-border: var(--border);
-  --color-input: var(--input);
-  --color-ring: var(--ring);
+  --color-input: var(--border);
+  --color-ring: var(--primary);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--primary-foreground);
+  --color-success: var(--success);
+  --color-success-soft: var(--success-soft);
+  --color-brand-soft: var(--brand-soft);
+  --color-gold: var(--gold);
+  --color-card-ink: var(--card-ink);
+  --color-card-text: var(--card-text);
+  --color-debit: var(--debit);
+  --color-credit: var(--credit);
+  --color-photo-overlay: var(--photo-overlay);
+  --radius-sm: 4px;
+  --radius-md: 6px;
+  --radius-lg: 8px;
+  --radius-xl: 8px;
 }
-
 :root {
-  --radius: 1rem;
-
-  --font-display-family: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body-family: "Inter", ui-sans-serif, system-ui, sans-serif;
-  --font-mono-family: "JetBrains Mono", ui-monospace, monospace;
-
-  --ink: hsl(105 35% 8%);
-  --paper: hsl(80 45% 98%);
-  --ice: hsl(82 76% 76%);
-  --accent: hsl(110 66% 30%);
-  --accent-foreground: hsl(80 45% 98%);
-  --gold: hsl(65 95% 52%);
-  --violet: hsl(92 72% 42%);
-
-  --background: var(--ice);
-  --foreground: var(--ink);
-  --card: hsl(0 0% 100% / 0.7);
-  --card-foreground: var(--ink);
-  --popover: hsl(0 0% 100%);
-  --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: hsl(0 0% 100%);
-  --secondary: hsl(82 55% 91%);
-  --secondary-foreground: var(--ink);
-  --muted: hsl(82 55% 91%);
-  --muted-foreground: hsl(105 18% 36%);
-  --destructive: hsl(3 72% 52%);
-  --destructive-foreground: hsl(0 0% 100%);
-  --border: hsl(105 35% 8% / 0.1);
-  --input: hsl(105 35% 8% / 0.12);
-  --ring: var(--accent);
+  --background: oklch(0.975 0.03 118);
+  --foreground: oklch(0.22 0.04 135);
+  --card: oklch(1 0.01 115 / 0.72);
+  --primary: oklch(0.52 0.16 138);
+  --primary-foreground: oklch(0.99 0.01 115);
+  --secondary: oklch(0.94 0.05 120);
+  --muted-foreground: oklch(0.47 0.04 135);
+  --border: oklch(0.88 0.06 122 / 0.8);
+  --success: oklch(0.5 0.14 145);
+  --success-soft: oklch(0.93 0.07 135);
+  --brand-soft: oklch(0.92 0.12 122);
+  --destructive: oklch(0.55 0.2 25);
+  --gold: oklch(0.9 0.18 110);
+  --card-ink: oklch(0.24 0.06 138);
+  --card-text: oklch(0.99 0.01 115);
+  --debit: oklch(0.5 0.16 140);
+  --credit: oklch(0.88 0.17 112);
+  --photo-overlay: oklch(0.18 0.05 138 / 0.65);
+  --lime: oklch(0.87 0.2 125);
+  --lime-deep: oklch(0.62 0.19 135);
+  --gradient-lime: linear-gradient(135deg, var(--lime), var(--lime-deep));
+  --aurora: radial-gradient(60% 50% at 10% 0%, oklch(0.9 0.17 122 / 0.55), transparent 70%), radial-gradient(50% 40% at 95% 10%, oklch(0.88 0.15 105 / 0.45), transparent 70%), radial-gradient(60% 50% at 60% 100%, oklch(0.85 0.14 145 / 0.35), transparent 70%);
+  --shadow-glass: 0 10px 30px -12px oklch(0.45 0.12 135 / 0.25);
 }
-
+.dark {
+  --background: oklch(0.17 0.03 140);
+  --foreground: oklch(0.95 0.03 115);
+  --card: oklch(0.23 0.04 138 / 0.7);
+  --primary: oklch(0.86 0.2 125);
+  --primary-foreground: oklch(0.2 0.05 138);
+  --secondary: oklch(0.28 0.05 138);
+  --muted-foreground: oklch(0.74 0.05 125);
+  --border: oklch(0.36 0.06 135 / 0.8);
+  --success: oklch(0.82 0.17 135);
+  --success-soft: oklch(0.3 0.07 138);
+  --brand-soft: oklch(0.32 0.09 132);
+  --destructive: oklch(0.74 0.15 25);
+  --aurora: radial-gradient(60% 50% at 10% 0%, oklch(0.45 0.15 130 / 0.45), transparent 70%), radial-gradient(50% 40% at 95% 10%, oklch(0.4 0.12 110 / 0.35), transparent 70%);
+}
 @layer base {
   * {
-    border-color: var(--color-border);
+    border-color: var(--border);
+    letter-spacing: 0;
+    box-sizing: border-box;
   }
-
   body {
-    background-color: var(--color-background);
-    color: var(--color-foreground);
-    font-family: var(--font-body-family);
+    margin: 0;
+    background: var(--aurora), var(--background);
+    background-attachment: fixed;
+    color: var(--foreground);
+    font-family: "Inter", sans-serif;
+  }
+  h1, h2, h3, .font-display {
+    font-family: "Space Grotesk", sans-serif;
+  }
+  button,
+  a,
+  input {
+    -webkit-tap-highlight-color: transparent;
+  }
+  button,
+  a {
+    touch-action: manipulation;
+  }
+  :focus-visible {
+    outline: 2px solid var(--primary);
+    outline-offset: 3px;
   }
 }
-
-/* Frosted panel surface used by every card in the app */
 @utility glass {
-  background: linear-gradient(150deg, hsl(80 45% 99% / 0.84), hsl(82 64% 90% / 0.58));
-  backdrop-filter: blur(14px);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--card);
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  backdrop-filter: blur(18px) saturate(1.4);
+  box-shadow: var(--shadow-glass);
+  transition: transform 0.25s ease, box-shadow 0.25s ease;
 }
-
-/* Phone-sized screen shell */
-@utility screen-panel {
-  position: relative;
+@utility lift {
+  &:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 18px 40px -16px oklch(0.45 0.15 135 / 0.4);
+  }
+}
+@utility bg-lime-gradient {
+  background: var(--gradient-lime);
+}
+@utility rise {
+  animation: rise 0.5s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+@keyframes rise {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: none; }
+}
+@utility tnum {
+  font-variant-numeric: tabular-nums;
+}
+.screen-panel {
+  width: 100%;
+  min-width: 0;
+}
+.sidebar {
+  position: fixed;
+  inset: 0 auto 0 0;
+  width: 236px;
+  background: var(--card);
+  backdrop-filter: blur(18px);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
+  z-index: 20;
+}
+.nav-item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 13px 16px;
+  border-radius: 6px;
+  color: var(--muted-foreground);
+  font-size: 14px;
+  font-weight: 500;
+}
+.nav-item { transition: background 0.2s, color 0.2s, transform 0.2s; }
+.nav-item:hover {
+  transform: translateX(2px);
+  background: var(--secondary);
+}
+.nav-item.active {
+  background: var(--brand-soft);
+  color: var(--primary);
+  font-weight: 700;
+}
+.workspace {
+  margin-left: 236px;
+}
+.workspace-header {
+  height: 85px;
+  border-bottom: 1px solid var(--border);
+  background: var(--card);
+  backdrop-filter: blur(18px);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 0 40px;
+}
+.content-area {
+  max-width: 1440px;
+  margin: 0 auto;
+  padding: 40px;
+}
+.avatar {
+  display: grid;
+  place-items: center;
+  width: 36px;
+  height: 36px;
+  flex-shrink: 0;
+  border-radius: 50%;
+  background: var(--brand-soft);
+  color: var(--primary);
+  font-size: 11px;
+  font-weight: 700;
+}
+.demo-badge {
+  padding: 4px 9px;
+  border-radius: 4px;
+  background: var(--success-soft);
+  color: var(--success);
+  font-size: 11px;
+  font-weight: 600;
+}
+.page-footer {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  border-top: 1px solid var(--border);
+  margin-top: 40px;
+  padding-top: 20px;
+  font-size: 11px;
+  color: var(--muted-foreground);
+}
+.mobile-nav {
+  display: none;
+}
+.wallet-stack {
+  position: relative;
+  width: 100%;
+  max-width: 460px;
+  height: 390px;
+  margin: auto;
+}
+.payment-card {
+  position: absolute;
+  height: 260px;
+  width: 100%;
+  padding: 26px;
+  border-radius: 16px;
+  color: var(--card-text);
+  transition: transform 0.25s;
   overflow: hidden;
-  border-radius: 2.6rem;
-  background-image: linear-gradient(to bottom, hsl(80 45% 99% / 0.8), hsl(82 76% 76% / 0.64));
-  box-shadow: inset 0 0 0 1px hsl(105 35% 8% / 0.1);
-  backdrop-filter: blur(20px);
-  -webkit-backdrop-filter: blur(20px);
 }
-
-/* Wallet card stack lifts slightly on hover while keeping the Student ID foremost */
-@utility wallet-card {
-  transition: transform 0.35s cubic-bezier(0.2, 0.7, 0.2, 1);
-  transform-origin: center center;
+.payment-card.credit {
+  top: 0;
+  background: var(--credit);
+  color: var(--card-ink);
+  transform: scale(0.94);
 }
-
-@utility tnum {
-  font-feature-settings: "tnum";
+.payment-card.debit {
+  top: 60px;
+  background: var(--debit);
+  transform: scale(0.97);
 }
-
-.group:hover .wallet-card:nth-child(1) {
-  transform: translateY(-5px) rotate(-1deg);
+.payment-card.student {
+  top: 120px;
+  background: var(--card-ink);
 }
-
-.group:hover .wallet-card:nth-child(2) {
-  transform: translateY(-2px) rotate(0.75deg);
+.chip {
+  width: 38px;
+  height: 28px;
+  border: 1px solid var(--gold);
+  background: var(--gold);
+  border-radius: 5px;
 }
-
-@media (prefers-reduced-motion: reduce) {
-  .wallet-card {
-    transition: none;
+.hero-cover {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.hero-cover:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(90deg, var(--photo-overlay), transparent);
+}
+.hero-cover img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.hero-cover .hero-copy {
+  position: absolute;
+  left: 32px;
+  bottom: 30px;
+  z-index: 1;
+  color: var(--card-text);
+}
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 13px;
+}
+.data-table th {
+  color: var(--muted-foreground);
+  font-size: 11px;
+  font-weight: 500;
+  padding: 14px 20px;
+  background: var(--background);
+}
+.data-table td {
+  padding: 18px 20px;
+  border-top: 1px solid var(--border);
+}
+.data-table td:last-child,
+.data-table th:last-child {
+  text-align: right;
+}
+@media (max-width: 1023px) {
+  .sidebar {
+    width: 200px;
+  }
+  .workspace {
+    margin-left: 200px;
+  }
+  .content-area {
+    padding: 28px;
+  }
+  .workspace-header {
+    padding: 0 28px;
   }
 }
-
-
-/* Optional dark mode. Original Lime Campus Glass light theme remains unchanged. */
-:root.dark {
-  color-scheme: dark;
-  --ink: hsl(82 40% 94%);
-  --paper: hsl(112 24% 11%);
-  --ice: hsl(112 22% 8%);
-  --accent: hsl(104 66% 69%);
-  --accent-foreground: hsl(112 30% 9%);
-  --gold: hsl(65 82% 54%);
-  --violet: hsl(92 66% 62%);
-  --background: var(--ice);
-  --foreground: var(--ink);
-  --card: hsl(112 19% 17% / 0.85);
-  --card-foreground: var(--ink);
-  --popover: hsl(112 21% 15%);
-  --popover-foreground: var(--ink);
-  --primary: var(--ink);
-  --primary-foreground: hsl(112 24% 10%);
-  --secondary: hsl(112 19% 22%);
-  --secondary-foreground: var(--ink);
-  --muted: hsl(112 19% 22%);
-  --muted-foreground: hsl(96 15% 72%);
-  --border: hsl(82 40% 94% / 0.14);
-  --input: hsl(82 40% 94% / 0.2);
-  --ring: var(--accent);
+@media (max-width: 767px) {
+  .sidebar {
+    display: none;
+  }
+  .workspace {
+    margin-left: 0;
+  }
+  .workspace-header {
+    height: 70px;
+    padding: 0 16px;
+  }
+  .content-area {
+    padding: 26px 16px 90px;
+  }
+  .mobile-nav {
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    position: fixed;
+    bottom: 0;
+    inset-inline: 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    padding-bottom: env(safe-area-inset-bottom);
+    z-index: 30;
+  }
+  .page-footer {
+    flex-direction: column;
+  }
+  .data-table th,
+  .data-table td {
+    padding: 14px 12px;
+  }
+  .payment-card {
+    padding: 20px;
+    height: 230px;
+  }
+  .wallet-stack {
+    height: 355px;
+  }
+  .hero-cover .hero-copy {
+    left: 20px;
+    bottom: 20px;
+  }
 }
-:root.dark .glass {
-  background: linear-gradient(150deg, hsl(112 20% 20% / 0.92), hsl(112 24% 12% / 0.86));
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *:before,
+  *:after {
+    animation: none !important;
+    transition: none !important;
+    scroll-behavior: auto !important;
+  }
 }
-:root.dark .screen-panel {
-  background-image: linear-gradient(to bottom, hsl(112 22% 16% / 0.96), hsl(112 22% 10% / 0.95));
-  box-shadow: inset 0 0 0 1px hsl(82 40% 94% / 0.14);
-}
-:root.dark .bg-white\/65, :root.dark .bg-white\/60, :root.dark .bg-white\/40 {
-  background-color: hsl(112 18% 24% / 0.85);
-}
-:root.dark .ring-white\/60 { --tw-ring-color: hsl(82 40% 94% / 0.12); }
-:root.dark input, :root.dark textarea { color: var(--ink); }
-:root.dark input::placeholder, :root.dark textarea::placeholder { color: hsl(96 15% 70%); }
