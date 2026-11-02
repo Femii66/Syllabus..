@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { BookOpen, GraduationCap, ReceiptText, Trophy, Utensils } from "lucide-react";
 import { Phone, Stage, PageHeading } from "@/components/phone";
+import { TuitionSync } from "@/components/tuition-sync";
 export const Route = createFileRoute("/campus")({
   head: () => ({
     meta: [
@@ -73,6 +74,7 @@ function Campus() {
             </table>
           </div>
         </section>
+        <TuitionSync />
       </Phone>
     </Stage>
   );
