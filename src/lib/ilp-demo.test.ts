@@ -71,3 +71,29 @@ describe("ilp demo ledger", () => {
     expect(Object.values(s.recipientBalances).every((b) => b === 10000)).toBe(true);
   });
 });
+
+describe("receipt trust and persistence", () => {
+  it("only trusts completed outgoing receipts in the stored ledger", async () => {
+    const { findReceipt } = await import("./ilp-demo");
+    const s = initialState("me");
+    const r = confirmQuote(s, createQuote(s, jordan.pointer, 2500, 0).quote!, jordan.name, 1);
+    if ("error" in r) throw new Error(r.error);
+    expect(findReceipt(r.state, r.txn.id)?.amount).toBe(2500);
+    expect(findReceipt(s, r.txn.id)).toBeNull(); // after reset / other identity
+    expect(findReceipt(r.state, undefined)).toBeNull(); // legacy ?amount=1000 URL
+    expect(findReceipt(r.state, "SYL-0000000000000000")).toBeNull();
+    const req = createRequest(r.state, 500, "", 2);
+    expect(findReceipt(req.state, req.txn.id)).toBeNull();
+  });
+  it("persists balance, credit and history through serialize/parse", async () => {
+    const { parseState } = await import("./ilp-demo");
+    const s = initialState("me");
+    const r = confirmQuote(s, createQuote(s, jordan.pointer, 2500, 0).quote!, jordan.name, 1);
+    if ("error" in r) throw new Error(r.error);
+    const back = parseState(JSON.stringify(r.state))!;
+    expect(back.balance).toBe(47500);
+    expect(back.recipientBalances[jordan.id]).toBe(12500);
+    expect(back.history[0]!.id).toBe(r.txn.id);
+    expect(parseState("not json")).toBeNull();
+  });
+});
