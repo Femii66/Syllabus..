@@ -24,6 +24,7 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { useSession } from "@/components/session";
 const campusImage = "https://images.unsplash.com/photo-1523050854058-8df90110c9f1?auto=format&fit=crop&w=1600&q=85";
+import { DashboardDemoWallet } from "@/components/ilp-demo";
 export const Route = createFileRoute("/dashboard")({
   head: () => ({
     meta: [
@@ -119,6 +120,10 @@ function Dashboard() {
             </div>
           ))}
         </div>
+        <p className="mt-3 text-xs text-muted-foreground">
+          Bank and campus balances above are static example figures and do not change when you send demo payments.
+        </p>
+        <DashboardDemoWallet />
 
         <div className="mt-6 grid gap-6 xl:grid-cols-[minmax(0,1fr)_360px]">
           <section className="glass rise min-w-0 p-6">
@@ -221,7 +226,7 @@ function Dashboard() {
           <section className="min-w-0">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Recent activity</h2>
-              <span className="text-xs text-muted-foreground">Last 7 days</span>
+              <span className="text-xs text-muted-foreground">Example activity · static</span>
             </div>
             <div className="glass overflow-hidden">
               <table className="data-table">
