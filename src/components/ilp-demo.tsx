@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate } from "@tanstack/react-router";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { Copy, Check, RefreshCw, RotateCcw, Send, Inbox, AlertTriangle } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { copyText, useIlpDemo } from "@/hooks/use-ilp-demo";
@@ -58,7 +58,7 @@ export function DemoWalletSummary() {
       </div>
       <div>
         <p className="text-xs text-muted-foreground">Demo USD balance {isGuest ? "(guest)" : ""}</p>
-        <p className="tnum mt-1 text-3xl font-semibold">{formatUSD(state.balance)}</p>
+        <p className="tnum mt-1 text-3xl font-semibold" data-testid="demo-balance">{formatUSD(state.balance)}</p>
       </div>
       <div>
         <p className="text-xs text-muted-foreground">Mock wallet address (not resolvable)</p>
@@ -181,10 +181,7 @@ export function IlpDemoPanel() {
     }
     commit(res.state);
     setQuote(null);
-    void navigate({
-      to: "/confirmation",
-      search: { amount: res.txn.amount / 100, mode: "send", source: "debit", receipt: res.txn.id },
-    });
+    void navigate({ to: "/confirmation", search: { receipt: res.txn.id } });
   }
   function makeRequest() {
     setErr("");
@@ -201,12 +198,13 @@ export function IlpDemoPanel() {
   return (
     <section className="glass p-6 sm:p-8" aria-labelledby="ilp-panel">
       <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
-        <h2 id="ilp-panel" className="text-lg font-semibold">Interledger-style payment</h2>
+        <h2 id="ilp-panel" className="text-lg font-semibold">Send or request money</h2>
         <DemoBadge />
       </div>
       <p className="mb-6 text-xs leading-5 text-muted-foreground">
-        Simulates the Open Payments quote → confirm → status flow on an in-browser ledger. This is not
-        Rafiki and moves no real money. Balance: <strong className="tnum">{formatUSD(s.balance)}</strong>
+        Pays from your demo payment wallet using an Interledger-style quote → confirm flow on an
+        in-browser ledger. Not Rafiki, no real money. Available:{" "}
+        <strong className="tnum" data-testid="panel-balance">{formatUSD(s.balance)}</strong>
       </p>
       <div className="mb-6 grid grid-cols-2 gap-2 rounded-lg bg-secondary p-1">
         {(["send", "request"] as const).map((m) => (
@@ -312,6 +310,49 @@ export function IlpDemoPanel() {
           <AlertTriangle className="size-4 shrink-0" /> {err}
         </p>
       )}
+    </section>
+  );
+}
+
+/** Live demo-ledger card for the dashboard; separate from the static example banking figures. */
+export function DashboardDemoWallet() {
+  const { state, isGuest } = useIlpDemo();
+  if (!state) return <div className="glass h-40 animate-pulse" aria-busy="true" />;
+  const rows = state.history.slice(0, 3);
+  return (
+    <section className="glass rise mt-6 grid gap-6 p-6 md:grid-cols-[minmax(0,260px)_minmax(0,1fr)]" aria-labelledby="dash-demo-wallet">
+      <div>
+        <div className="flex flex-wrap items-center gap-2">
+          <h2 id="dash-demo-wallet" className="text-lg font-semibold">Demo payment wallet</h2>
+          <DemoBadge />
+        </div>
+        <p className="mt-1 text-xs text-muted-foreground">Live in-browser ledger {isGuest ? "(guest)" : ""} · updates when you send</p>
+        <p className="tnum mt-4 font-display text-4xl font-bold" data-testid="dashboard-demo-balance">{formatUSD(state.balance)}</p>
+        <Button asChild size="sm" className="mt-4">
+          <Link to="/send"><Send /> Send or request</Link>
+        </Button>
+      </div>
+      <div className="min-w-0">
+        <h3 className="mb-2 text-sm font-semibold">Recent demo activity</h3>
+        {rows.length === 0 ? (
+          <p className="text-xs text-muted-foreground">No demo payments yet. Sends and requests you make on Send & receive appear here.</p>
+        ) : (
+          <ul className="divide-y text-sm">
+            {rows.map((t) => (
+              <li key={t.id} className="flex justify-between gap-3 py-2">
+                <span className="min-w-0 truncate">
+                  {t.kind === "outgoing" ? `Sent to ${t.counterparty}` : `Requested${t.note ? ` · ${t.note}` : ""}`}
+                  <span className="block truncate text-xs text-muted-foreground">{t.id}</span>
+                </span>
+                <span className={`tnum shrink-0 font-semibold ${t.kind === "outgoing" ? "" : "text-muted-foreground"}`}>
+                  {t.kind === "outgoing" ? "−" : "+"}{formatUSD(t.amount)}
+                  {t.kind !== "outgoing" && <span className="block text-right text-xs font-normal">pending</span>}
+                </span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </section>
   );
 }
