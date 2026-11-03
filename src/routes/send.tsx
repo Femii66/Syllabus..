@@ -3,6 +3,7 @@ import { Check, CreditCard, ArrowUpRight, ArrowDownLeft, Delete } from "lucide-r
 import { useState } from "react";
 import { Phone, Stage, PageHeading } from "@/components/phone";
 import { Button } from "@/components/ui/button";
+import { IlpDemoPanel, DemoWalletSummary } from "@/components/ilp-demo";
 export const Route = createFileRoute("/send")({
   head: () => ({
     meta: [
@@ -138,6 +139,10 @@ function Send() {
               <ArrowUpRight />
             </Button>
           </section>
+        </div>
+        <div className="mt-10 grid gap-8 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
+          <IlpDemoPanel />
+          <DemoWalletSummary />
         </div>
       </Phone>
     </Stage>
