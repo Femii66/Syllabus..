@@ -165,6 +165,13 @@ export function createRequest(state: DemoState, amount: number, note: string, no
   return { state: { ...state, history: [txn, ...state.history] }, txn, text };
 }
 
+/** A receipt is trusted only if it is a completed outgoing entry in this identity's own stored ledger.
+ * URL-supplied amounts, recipients or times are never trusted. */
+export function findReceipt(state: DemoState | null, id: unknown): Txn | null {
+  if (!state || typeof id !== "string" || !/^SYL-[0-9A-F]{16}$/.test(id)) return null;
+  return state.history.find((t) => t.id === id && t.kind === "outgoing" && t.status === "completed") ?? null;
+}
+
 export function parseState(raw: string | null): DemoState | null {
   if (!raw) return null;
   try {
