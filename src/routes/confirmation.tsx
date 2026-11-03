@@ -1,78 +1,87 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ArrowRight } from "lucide-react";
+import { Check, ArrowRight, FileQuestion } from "lucide-react";
 import { Phone, Stage } from "@/components/phone";
 import { Button } from "@/components/ui/button";
 import { useIlpDemo } from "@/hooks/use-ilp-demo";
-type ConfirmationSearch = {
-  amount: number;
-  mode: "send" | "receive";
-  source: "student-id" | "debit";
-  receipt?: string;
-};
+import { findReceipt, formatUSD } from "@/lib/ilp-demo";
+
+type ConfirmationSearch = { receipt?: string };
 export const Route = createFileRoute("/confirmation")({
-  validateSearch: (s: Record<string, unknown>): ConfirmationSearch => ({
-    amount: Number(s["amount"] ?? 45),
-    mode: s["mode"] === "receive" ? "receive" : "send",
-    source: s["source"] === "student-id" ? "student-id" : "debit",
-    ...(typeof s["receipt"] === "string" && /^SYL-[0-9A-F]{16}$/.test(s["receipt"])
-      ? { receipt: s["receipt"] }
-      : {}),
-  }),
+  // Only the receipt id is read from the URL; every displayed detail comes from the stored ledger.
+  validateSearch: (s: Record<string, unknown>): ConfirmationSearch =>
+    typeof s["receipt"] === "string" ? { receipt: s["receipt"].slice(0, 40) } : {},
   head: () => ({
     meta: [
       { title: "Transfer receipt — $yllabus" },
-      { name: "description", content: "Your simulated transfer receipt." },
+      { name: "description", content: "Your simulated demo wallet receipt." },
       { property: "og:title", content: "Transfer receipt — $yllabus" },
-      { property: "og:description", content: "Review your simulated payment or request." },
+      { property: "og:description", content: "Review a simulated payment from your demo wallet ledger." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
     ],
   }),
   component: Confirmation,
 });
+
 function Confirmation() {
-  const { amount, mode, source, receipt } = Route.useSearch();
+  const { receipt } = Route.useSearch();
   const { state } = useIlpDemo();
-  const txn = receipt ? state?.history.find((t) => t.id === receipt) : undefined;
+  if (!state)
+    return (
+      <Stage>
+        <Phone>
+          <div className="glass mx-auto my-10 h-80 max-w-lg animate-pulse" aria-busy="true" />
+        </Phone>
+      </Stage>
+    );
+  const txn = findReceipt(state, receipt);
   return (
     <Stage>
       <Phone>
         <div className="mx-auto max-w-lg py-10">
-          <span className="mx-auto grid size-16 place-items-center rounded-full bg-success-soft text-success">
-            <Check className="size-8" />
-          </span>
-          <h1 className="mt-6 text-center text-3xl font-semibold">
-            {mode === "send" ? "Payment sent" : "Request sent"}
-          </h1>
-          <p className="mt-3 text-center text-sm text-muted-foreground">
-            {mode === "send" ? "Delivered to" : "Requested from"} {txn?.counterparty ?? "Jordan Okafor"}
-          </p>
-          <p className="mt-2 text-center text-xs text-muted-foreground">
-            {txn ? "Interledger demo · in-browser ledger · " : "Simulated transaction · "}No real money moved
-          </p>
-          <dl className="my-8 space-y-5 border-y py-7">
-            {[
-              {
-                label: "Amount",
-                value: (txn ? txn.amount / 100 : amount).toLocaleString("en-US", { style: "currency", currency: "USD" }),
-              },
-              txn
-                ? { label: "To", value: txn.pointer }
-                : {
-                    label: mode === "send" ? "From" : "Into",
-                    value: source === "student-id" ? "Student ID · Bulldog Bucks" : "Debit ·· 4471",
-                  },
-              ...(txn ? [{ label: "Status", value: "Completed (simulated)" }, { label: "Fee", value: "$0.00" }] : []),
-              { label: "Reference", value: txn ? txn.id : "#SYL-9204" },
-              { label: "Time", value: txn ? new Date(txn.createdAt).toLocaleString() : "2:41 PM" },
-            ].map((x) => (
-              <div key={x.label} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 text-sm">
-                <dt className="text-muted-foreground">{x.label}</dt>
-                <dd className="text-right font-semibold">{x.value}</dd>
-              </div>
-            ))}
-          </dl>
-          <Button asChild className="h-12 w-full">
+          {txn ? (
+            <>
+              <span className="mx-auto grid size-16 place-items-center rounded-full bg-success-soft text-success">
+                <Check className="size-8" />
+              </span>
+              <h1 className="mt-6 text-center text-3xl font-semibold">Payment sent</h1>
+              <p className="mt-3 text-center text-sm text-muted-foreground">Delivered to {txn.counterparty}</p>
+              <p className="mt-2 text-center text-xs text-muted-foreground">
+                Interledger demo · in-browser ledger · No real money moved
+              </p>
+              <dl className="my-8 space-y-5 border-y py-7">
+                {[
+                  { label: "Amount", value: formatUSD(txn.amount) },
+                  { label: "From", value: "Demo payment wallet" },
+                  { label: "To", value: txn.pointer },
+                  { label: "Status", value: "Completed (simulated)" },
+                  { label: "Fee", value: "$0.00" },
+                  { label: "Reference", value: txn.id },
+                  { label: "Time", value: new Date(txn.createdAt).toLocaleString() },
+                ].map((x) => (
+                  <div key={x.label} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 text-sm">
+                    <dt className="text-muted-foreground">{x.label}</dt>
+                    <dd className="break-all text-right font-semibold">{x.value}</dd>
+                  </div>
+                ))}
+              </dl>
+            </>
+          ) : (
+            <>
+              <span className="mx-auto grid size-16 place-items-center rounded-full bg-secondary text-muted-foreground">
+                <FileQuestion className="size-8" />
+              </span>
+              <h1 className="mt-6 text-center text-3xl font-semibold">Receipt unavailable</h1>
+              <p className="mx-auto mt-3 max-w-sm text-center text-sm text-muted-foreground">
+                We couldn't find this payment in your demo wallet on this browser. It may have been
+                reset, made under a different account, or never confirmed.
+              </p>
+              <Button asChild variant="outline" className="mt-8 h-12 w-full">
+                <Link to="/send">Go to Send & receive</Link>
+              </Button>
+            </>
+          )}
+          <Button asChild className="mt-3 h-12 w-full">
             <Link to="/dashboard">
               Done <ArrowRight />
             </Link>
