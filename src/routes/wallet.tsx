@@ -1,6 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { Nfc, GraduationCap, CreditCard, WalletCards } from "lucide-react";
 import { Phone, Stage, PageHeading } from "@/components/phone";
+import { DemoWalletSummary } from "@/components/ilp-demo";
 export const Route = createFileRoute("/wallet")({
   head: () => ({
     meta: [
@@ -107,6 +108,7 @@ function Wallet() {
             </p>
           </div>
         </div>
+        <DemoWalletSummary />
       </Phone>
     </Stage>
   );
