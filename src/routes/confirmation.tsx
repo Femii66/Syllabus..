@@ -2,16 +2,21 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Check, ArrowRight } from "lucide-react";
 import { Phone, Stage } from "@/components/phone";
 import { Button } from "@/components/ui/button";
+import { useIlpDemo } from "@/hooks/use-ilp-demo";
 type ConfirmationSearch = {
   amount: number;
   mode: "send" | "receive";
   source: "student-id" | "debit";
+  receipt?: string;
 };
 export const Route = createFileRoute("/confirmation")({
   validateSearch: (s: Record<string, unknown>): ConfirmationSearch => ({
     amount: Number(s["amount"] ?? 45),
     mode: s["mode"] === "receive" ? "receive" : "send",
     source: s["source"] === "student-id" ? "student-id" : "debit",
+    ...(typeof s["receipt"] === "string" && /^SYL-[0-9A-F]{16}$/.test(s["receipt"])
+      ? { receipt: s["receipt"] }
+      : {}),
   }),
   head: () => ({
     meta: [
@@ -26,7 +31,9 @@ export const Route = createFileRoute("/confirmation")({
   component: Confirmation,
 });
 function Confirmation() {
-  const { amount, mode, source } = Route.useSearch();
+  const { amount, mode, source, receipt } = Route.useSearch();
+  const { state } = useIlpDemo();
+  const txn = receipt ? state?.history.find((t) => t.id === receipt) : undefined;
   return (
     <Stage>
       <Phone>
@@ -38,23 +45,26 @@ function Confirmation() {
             {mode === "send" ? "Payment sent" : "Request sent"}
           </h1>
           <p className="mt-3 text-center text-sm text-muted-foreground">
-            {mode === "send" ? "Delivered to" : "Requested from"} Jordan Okafor
+            {mode === "send" ? "Delivered to" : "Requested from"} {txn?.counterparty ?? "Jordan Okafor"}
           </p>
           <p className="mt-2 text-center text-xs text-muted-foreground">
-            Simulated transaction · No real money moved
+            {txn ? "Interledger demo · in-browser ledger · " : "Simulated transaction · "}No real money moved
           </p>
           <dl className="my-8 space-y-5 border-y py-7">
             {[
               {
                 label: "Amount",
-                value: amount.toLocaleString("en-US", { style: "currency", currency: "USD" }),
+                value: (txn ? txn.amount / 100 : amount).toLocaleString("en-US", { style: "currency", currency: "USD" }),
               },
-              {
-                label: mode === "send" ? "From" : "Into",
-                value: source === "student-id" ? "Student ID · Bulldog Bucks" : "Debit ·· 4471",
-              },
-              { label: "Reference", value: "#SYL-9204" },
-              { label: "Time", value: "2:41 PM" },
+              txn
+                ? { label: "To", value: txn.pointer }
+                : {
+                    label: mode === "send" ? "From" : "Into",
+                    value: source === "student-id" ? "Student ID · Bulldog Bucks" : "Debit ·· 4471",
+                  },
+              ...(txn ? [{ label: "Status", value: "Completed (simulated)" }, { label: "Fee", value: "$0.00" }] : []),
+              { label: "Reference", value: txn ? txn.id : "#SYL-9204" },
+              { label: "Time", value: txn ? new Date(txn.createdAt).toLocaleString() : "2:41 PM" },
             ].map((x) => (
               <div key={x.label} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 text-sm">
                 <dt className="text-muted-foreground">{x.label}</dt>
