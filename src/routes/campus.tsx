@@ -35,6 +35,9 @@ function Campus() {
         <div className="mb-8 border-y py-7">
           <p className="text-sm text-muted-foreground">Available campus funds</p>
           <p className="tnum mt-3 text-4xl font-semibold">$3,071.85</p>
+          <p className="mt-3 text-xs text-muted-foreground">
+            Static example balances for presentation — only the tuition import below is your own data.
+          </p>
         </div>
         <div className="grid gap-5 sm:grid-cols-2 xl:grid-cols-3">
           {accounts.map((a) => (
