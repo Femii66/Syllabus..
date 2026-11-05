@@ -204,7 +204,16 @@ export function TuitionSync() {
               <dl className="mt-4 space-y-1 text-xs text-muted-foreground">
                 <div>Statement date: {snap.statement_date}</div>
                 {snap.source_filename && <div className="break-all">Source: {snap.source_filename}</div>}
-                <div>Last updated: {new Date(snap.updated_at).toLocaleString()}</div>
+                <div>
+                  Last updated:{" "}
+                  {new Date(snap.updated_at).toLocaleString("en-US", {
+                    month: "short",
+                    day: "numeric",
+                    year: "numeric",
+                    hour: "numeric",
+                    minute: "2-digit",
+                  })}
+                </div>
               </dl>
               <Button variant="ghost" size="sm" className="mt-4" onClick={remove} disabled={busy}>
                 <Trash2 /> Delete imported snapshot
@@ -213,7 +222,13 @@ export function TuitionSync() {
           ) : (
             <>
               <p className="tnum mt-2 text-3xl font-semibold text-muted-foreground">$8,450.00</p>
-              <p className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">Demo data</p>
+              <p className="mt-2 inline-flex rounded-full bg-muted px-2.5 py-0.5 text-xs font-medium">
+                Example figure · not your data
+              </p>
+              <p className="mt-3 text-xs text-muted-foreground">
+                Upload a statement or enter your balance manually to replace this example. Imported
+                balances are always marked self-reported and are never verified automatically.
+              </p>
             </>
           )}
         </div>
