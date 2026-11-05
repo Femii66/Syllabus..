@@ -1,9 +1,9 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
-import { Check, ArrowRight, FileQuestion } from "lucide-react";
+import { Check, ArrowRight, FileQuestion, Wallet } from "lucide-react";
 import { Phone, Stage } from "@/components/phone";
 import { Button } from "@/components/ui/button";
 import { useIlpDemo } from "@/hooks/use-ilp-demo";
-import { findReceipt, formatUSD } from "@/lib/ilp-demo";
+import { findReceipt, formatDateTime, formatUSD, statusLabel } from "@/lib/ilp-demo";
 
 type ConfirmationSearch = { receipt?: string };
 export const Route = createFileRoute("/confirmation")({
@@ -54,10 +54,10 @@ function Confirmation() {
                   { label: "Amount", value: formatUSD(txn.amount) },
                   { label: "From", value: "Demo payment wallet" },
                   { label: "To", value: txn.pointer },
-                  { label: "Status", value: "Completed (simulated)" },
+                  { label: "Status", value: statusLabel(txn) },
                   { label: "Fee", value: "$0.00" },
                   { label: "Reference", value: txn.id },
-                  { label: "Time", value: new Date(txn.createdAt).toLocaleString() },
+                  { label: "Time", value: formatDateTime(txn.createdAt) },
                 ].map((x) => (
                   <div key={x.label} className="grid grid-cols-[auto_minmax(0,1fr)] gap-4 text-sm">
                     <dt className="text-muted-foreground">{x.label}</dt>
@@ -81,11 +81,18 @@ function Confirmation() {
               </Button>
             </>
           )}
-          <Button asChild className="mt-3 h-12 w-full">
-            <Link to="/dashboard">
-              Done <ArrowRight />
-            </Link>
-          </Button>
+          <div className="mt-3 grid gap-3 sm:grid-cols-2">
+            <Button asChild variant="outline" className="h-12">
+              <Link to="/wallet">
+                <Wallet /> Back to wallet
+              </Link>
+            </Button>
+            <Button asChild className="h-12">
+              <Link to="/dashboard">
+                Done <ArrowRight />
+              </Link>
+            </Button>
+          </div>
         </div>
       </Phone>
     </Stage>
