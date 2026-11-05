@@ -226,14 +226,16 @@ function Dashboard() {
           <section className="min-w-0">
             <div className="mb-4 flex items-center justify-between">
               <h2 className="text-lg font-semibold">Recent activity</h2>
-              <span className="text-xs text-muted-foreground">Example activity · static</span>
+              <span className="rounded-full bg-secondary px-2.5 py-1 text-[11px] font-semibold text-muted-foreground">
+                Sample data · does not change
+              </span>
             </div>
             <div className="glass overflow-hidden">
               <table className="data-table">
                 <thead>
                   <tr>
                     <th>Transaction</th>
-                    <th className="hidden lg:table-cell">Date</th>
+                    <th className="hidden lg:table-cell">Sample date</th>
                     <th>Amount</th>
                   </tr>
                 </thead>
