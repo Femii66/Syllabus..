@@ -66,6 +66,36 @@ export function initialState(demoId = randomId("", 6).toLowerCase()): DemoState 
 export const formatUSD = (minor: number) =>
   (minor / 10 ** ASSET.scale).toLocaleString("en-US", { style: "currency", currency: "USD" });
 
+/** Legible local date + time, e.g. "Nov 5, 2026, 2:19 PM". Never invents a time. */
+export function formatDateTime(ts: number): string {
+  return new Date(ts).toLocaleString("en-US", {
+    month: "short",
+    day: "numeric",
+    year: "numeric",
+    hour: "numeric",
+    minute: "2-digit",
+  });
+}
+
+/** Concise relative time for activity rows: "just now", "5m ago", "2h ago", "3d ago",
+ * falling back to an absolute date after a week. */
+export function formatRelativeTime(ts: number, now: number): string {
+  const diff = Math.max(0, now - ts);
+  const m = Math.floor(diff / 60_000);
+  if (m < 1) return "just now";
+  if (m < 60) return `${m}m ago`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `${h}h ago`;
+  const d = Math.floor(h / 24);
+  if (d < 7) return `${d}d ago`;
+  return new Date(ts).toLocaleDateString("en-US", { month: "short", day: "numeric", year: "numeric" });
+}
+
+/** Human status for a ledger entry; requests are pending and never credited. */
+export function statusLabel(t: Pick<Txn, "kind" | "status">): string {
+  return t.kind === "outgoing" ? "Completed · simulated" : "Pending request";
+}
+
 /** Parse a user-entered dollar string into minor units; null if invalid. */
 export function parseAmount(input: string): number | null {
   const t = input.trim();
