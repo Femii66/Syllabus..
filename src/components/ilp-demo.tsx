@@ -1,19 +1,34 @@
 import { useEffect, useState } from "react";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Copy, Check, RefreshCw, RotateCcw, Send, Inbox, AlertTriangle } from "lucide-react";
+import {
+  Copy,
+  Check,
+  RefreshCw,
+  RotateCcw,
+  Send,
+  Inbox,
+  AlertTriangle,
+  ArrowUpRight,
+  ArrowDownLeft,
+  ReceiptText,
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { copyText, useIlpDemo } from "@/hooks/use-ilp-demo";
 import {
   confirmQuote,
   createQuote,
   createRequest,
+  formatDateTime,
+  formatRelativeTime,
   formatUSD,
   isExpired,
   parseAmount,
   pointerFor,
   resolvePointer,
   SAMPLE_RECIPIENTS,
+  statusLabel,
   type Quote,
+  type Txn,
 } from "@/lib/ilp-demo";
 
 const input =
@@ -96,34 +111,95 @@ export function DemoWalletSummary() {
   );
 }
 
+/** One ledger row: direction, counterparty, real timestamp, reference, status and amount. */
+function TxnRow({ t, now }: { t: Txn; now: number }) {
+  const outgoing = t.kind === "outgoing";
+  return (
+    <li className="grid grid-cols-[auto_minmax(0,1fr)_auto] items-center gap-3 py-3">
+      <span
+        className={`grid size-9 shrink-0 place-items-center rounded-lg ${
+          outgoing ? "bg-secondary text-muted-foreground" : "bg-brand-soft text-primary"
+        }`}
+        aria-hidden="true"
+      >
+        {outgoing ? <ArrowUpRight className="size-4" /> : <ArrowDownLeft className="size-4" />}
+      </span>
+      <div className="min-w-0">
+        <p className="truncate text-sm font-medium">
+          {outgoing ? `Sent to ${t.counterparty}` : `Requested${t.note ? ` · ${t.note}` : ""}`}
+          {outgoing && <span className="text-xs font-normal text-muted-foreground"> (sample)</span>}
+        </p>
+        <p className="truncate text-xs text-muted-foreground">
+          <time dateTime={new Date(t.createdAt).toISOString()}>
+            {formatRelativeTime(t.createdAt, now)} · {formatDateTime(t.createdAt)}
+          </time>
+        </p>
+        <p className="truncate font-mono text-[11px] text-muted-foreground">Ref {t.id}</p>
+      </div>
+      <div className="flex flex-col items-end gap-1">
+        <p className={`tnum text-sm font-semibold ${outgoing ? "" : "text-muted-foreground"}`}>
+          {outgoing ? "−" : "+"}
+          {formatUSD(t.amount)}
+        </p>
+        <span
+          className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${
+            outgoing ? "bg-success-soft text-success" : "bg-secondary text-muted-foreground"
+          }`}
+        >
+          {statusLabel(t)}
+        </span>
+        {outgoing && (
+          <Link
+            to="/confirmation"
+            search={{ receipt: t.id }}
+            className="inline-flex items-center gap-1 text-[11px] font-medium text-primary underline-offset-2 hover:underline"
+          >
+            <ReceiptText className="size-3" /> Receipt
+          </Link>
+        )}
+      </div>
+    </li>
+  );
+}
+
+function EmptyActivity({ compact }: { compact?: boolean }) {
+  return (
+    <div className="rounded-lg border border-dashed p-4 text-center">
+      <p className="text-xs text-muted-foreground">
+        {compact
+          ? "No demo payments yet. Sends and requests you make on Send & receive appear here."
+          : "No demo payments yet."}
+      </p>
+      <Button asChild variant="link" size="sm" className="mt-1 h-auto p-0 text-xs">
+        <Link to="/send">Send your first demo payment</Link>
+      </Button>
+    </div>
+  );
+}
+
+/** Ticks every 30s so relative timestamps stay fresh while the page is open. */
+function useNow(intervalMs = 30_000) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    const t = setInterval(() => setNow(Date.now()), intervalMs);
+    return () => clearInterval(t);
+  }, [intervalMs]);
+  return now;
+}
+
 export function ActivityList({ limit }: { limit?: number }) {
   const { state } = useIlpDemo();
+  const now = useNow();
   const rows = (state?.history ?? []).slice(0, limit);
   return (
     <div>
       <h3 className="mb-2 text-sm font-semibold">Demo activity</h3>
       {rows.length === 0 ? (
-        <p className="text-xs text-muted-foreground">No demo payments yet.</p>
+        <EmptyActivity />
       ) : (
-        <ul className="divide-y text-sm">
+        <ul className="divide-y">
           {rows.map((t) => (
-            <li key={t.id} className="grid grid-cols-[minmax(0,1fr)_auto] gap-3 py-2.5">
-              <div className="min-w-0">
-                <p className="truncate font-medium">
-                  {t.kind === "outgoing" ? `To ${t.counterparty}` : `Request${t.note ? ` · ${t.note}` : ""}`}
-                </p>
-                <p className="truncate text-xs text-muted-foreground">
-                  {new Date(t.createdAt).toLocaleString()} · {t.id}
-                </p>
-              </div>
-              <div className="text-right">
-                <p className="tnum font-semibold">
-                  {t.kind === "outgoing" ? "−" : "+"}
-                  {formatUSD(t.amount)}
-                </p>
-                <p className="text-xs capitalize text-muted-foreground">{t.status}</p>
-              </div>
-            </li>
+            <TxnRow key={t.id} t={t} now={now} />
           ))}
         </ul>
       )}
@@ -261,9 +337,11 @@ export function IlpDemoPanel() {
               ["Recipient", quote.receiver],
               ["You send (debit)", formatUSD(quote.debitAmount)],
               ["They receive", formatUSD(quote.receiveAmount)],
-              ["Fee", formatUSD(quote.fee)],
+              ["Fee", `${formatUSD(quote.fee)} · no fees in this demo`],
               ["Asset", `${quote.asset.code} · scale ${quote.asset.scale}`],
               ["Quote", quote.id],
+              ["Created", formatDateTime(quote.createdAt)],
+              ["Expires at", formatDateTime(quote.expiresAt)],
             ].map(([k, v]) => (
               <div key={k} className="grid grid-cols-[auto_minmax(0,1fr)] gap-3">
                 <dt className="text-muted-foreground">{k}</dt>
@@ -272,7 +350,9 @@ export function IlpDemoPanel() {
             ))}
           </dl>
           <p aria-live="polite" className={`text-sm ${expired ? "text-destructive" : "text-muted-foreground"}`}>
-            {expired ? "Quote expired." : `Quote valid for ${secs}s`}
+            {expired
+              ? "Quote expired. Refresh it to get a new 60-second quote — nothing was charged."
+              : `Quote valid for ${secs}s · confirming debits your demo wallet once`}
           </p>
           <div className="grid grid-cols-2 gap-2">
             <Button variant="outline" onClick={() => setQuote(null)}>Edit</Button>
@@ -296,8 +376,13 @@ export function IlpDemoPanel() {
             <input className={`${input} mt-2`} maxLength={80} value={note} onChange={(e) => setNote(e.target.value)} />
           </label>
           <Button className="h-11 w-full" onClick={makeRequest}>Create incoming payment request</Button>
+          <p className="text-xs text-muted-foreground">
+            A request is only recorded as pending — it never changes your balance, and nobody is
+            charged.
+          </p>
           {reqText && (
             <div className="space-y-2 rounded-lg border p-4">
+              <p className="text-xs font-semibold text-success">Request created — copy and share it.</p>
               <p className="break-words text-xs">{reqText}</p>
               <CopyButton text={reqText} label="Copy request text" />
             </div>
@@ -317,6 +402,7 @@ export function IlpDemoPanel() {
 /** Live demo-ledger card for the dashboard; separate from the static example banking figures. */
 export function DashboardDemoWallet() {
   const { state, isGuest } = useIlpDemo();
+  const now = useNow();
   if (!state) return <div className="glass h-40 animate-pulse" aria-busy="true" />;
   const rows = state.history.slice(0, 3);
   return (
@@ -335,20 +421,11 @@ export function DashboardDemoWallet() {
       <div className="min-w-0">
         <h3 className="mb-2 text-sm font-semibold">Recent demo activity</h3>
         {rows.length === 0 ? (
-          <p className="text-xs text-muted-foreground">No demo payments yet. Sends and requests you make on Send & receive appear here.</p>
+          <EmptyActivity compact />
         ) : (
-          <ul className="divide-y text-sm">
+          <ul className="divide-y">
             {rows.map((t) => (
-              <li key={t.id} className="flex justify-between gap-3 py-2">
-                <span className="min-w-0 truncate">
-                  {t.kind === "outgoing" ? `Sent to ${t.counterparty}` : `Requested${t.note ? ` · ${t.note}` : ""}`}
-                  <span className="block truncate text-xs text-muted-foreground">{t.id}</span>
-                </span>
-                <span className={`tnum shrink-0 font-semibold ${t.kind === "outgoing" ? "" : "text-muted-foreground"}`}>
-                  {t.kind === "outgoing" ? "−" : "+"}{formatUSD(t.amount)}
-                  {t.kind !== "outgoing" && <span className="block text-right text-xs font-normal">pending</span>}
-                </span>
-              </li>
+              <TxnRow key={t.id} t={t} now={now} />
             ))}
           </ul>
         )}
