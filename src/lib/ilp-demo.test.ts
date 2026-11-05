@@ -3,11 +3,14 @@ import {
   confirmQuote,
   createQuote,
   createRequest,
+  formatDateTime,
+  formatRelativeTime,
   initialState,
   parseAmount,
   QUOTE_TTL_MS,
   resolvePointer,
   SAMPLE_RECIPIENTS,
+  statusLabel,
 } from "./ilp-demo";
 
 const jordan = SAMPLE_RECIPIENTS[0]!;
@@ -69,6 +72,31 @@ describe("ilp demo ledger", () => {
     const s = initialState("me");
     expect(s.history).toEqual([]);
     expect(Object.values(s.recipientBalances).every((b) => b === 10000)).toBe(true);
+  });
+});
+
+describe("timestamp and status formatting", () => {
+  it("formats a real timestamp as a legible local date and time", () => {
+    const ts = new Date(2026, 10, 5, 14, 19).getTime();
+    const out = formatDateTime(ts);
+    expect(out).toContain("Nov 5, 2026");
+    expect(out).toMatch(/2:19\s*PM/);
+  });
+  it("formats relative time concisely and falls back to a date after a week", () => {
+    const now = 1_000_000_000_000;
+    expect(formatRelativeTime(now - 5_000, now)).toBe("just now");
+    expect(formatRelativeTime(now - 5 * 60_000, now)).toBe("5m ago");
+    expect(formatRelativeTime(now - 2 * 3_600_000, now)).toBe("2h ago");
+    expect(formatRelativeTime(now - 3 * 86_400_000, now)).toBe("3d ago");
+    expect(formatRelativeTime(now - 30 * 86_400_000, now)).toMatch(/\w{3} \d{1,2}, \d{4}/);
+  });
+  it("never shows a future timestamp as negative", () => {
+    const now = 1_000_000_000_000;
+    expect(formatRelativeTime(now + 60_000, now)).toBe("just now");
+  });
+  it("labels completed sends as simulated and requests as pending", () => {
+    expect(statusLabel({ kind: "outgoing", status: "completed" })).toBe("Completed · simulated");
+    expect(statusLabel({ kind: "incoming-request", status: "pending" })).toBe("Pending request");
   });
 });
 
