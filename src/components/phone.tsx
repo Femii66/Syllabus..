@@ -37,7 +37,7 @@ const tabs = [
 export function Stage({ children }: { children: ReactNode }) {
   const path = useRouterState({ select: (s) => s.location.pathname });
   const { user } = useSession();
-  const publicPage = path === "/" || path.startsWith("/auth");
+  const publicPage = path === "/" || path.startsWith("/auth") || path === "/privacy" || path === "/image-use" || path === "/demo-disclosure";
   if (publicPage)
     return (
       <div className="min-h-screen bg-background">
@@ -53,6 +53,14 @@ export function Stage({ children }: { children: ReactNode }) {
           </div>
         </header>
         {children}
+        <footer className="mx-auto flex max-w-[1440px] flex-wrap items-center justify-between gap-4 border-t px-6 py-5 text-xs text-muted-foreground lg:px-12">
+          <span>© 2026 $yllabus · Educational demonstration, not a bank</span>
+          <nav aria-label="Legal and trust" className="flex flex-wrap gap-x-4 gap-y-2">
+            <Link className="hover:text-foreground" to="/privacy">Privacy</Link>
+            <Link className="hover:text-foreground" to="/image-use">Image use</Link>
+            <Link className="hover:text-foreground" to="/demo-disclosure">Demo information</Link>
+          </nav>
+        </footer>
       </div>
     );
   return (
@@ -115,9 +123,14 @@ export function Stage({ children }: { children: ReactNode }) {
         </header>
         <main className="content-area">
           {children}
-          <footer className="page-footer">
+          <footer className="page-footer flex flex-wrap items-center gap-x-4 gap-y-2">
             <span>© 2026 $yllabus</span>
             <span>Demo balances · No real money moves</span>
+            <nav aria-label="Legal and trust" className="flex flex-wrap gap-3">
+              <Link to="/privacy">Privacy</Link>
+              <Link to="/image-use">Image use</Link>
+              <Link to="/demo-disclosure">Demo information</Link>
+            </nav>
           </footer>
         </main>
       </div>
