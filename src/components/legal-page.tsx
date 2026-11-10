@@ -1,7 +1,8 @@
 import { Link } from "@tanstack/react-router";
+import type { ReactNode } from "react";
 import { Stage } from "@/components/phone";
 
-export function LegalPage({ title, subtitle, children }: { title: string; subtitle: string; children: React.ReactNode }) {
+export function LegalPage({ title, subtitle, children }: { title: string; subtitle: string; children: ReactNode }) {
   return (
     <Stage>
       <main className="mx-auto max-w-3xl px-6 pb-20 pt-10 lg:pt-14">
